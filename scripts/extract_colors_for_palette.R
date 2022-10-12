@@ -80,10 +80,15 @@ shrub_pal <- image_palette(shrub, n = 5)
 display_image(shrub)
 show_col(shrub_pal)  #D4D7D4
 
-lifeform_pal <- c('#E4D7B1', '#80A57B', '#994DC8',  '#C84DB9', '#F4D11F', '#D4D7D4')
+lifeform_pal <- c('#E4D7B1', '#37AE0F', '#994DC8',  '#C84DB9', '#F4D11F', '#D4D7D4')
 show_col(lifeform_pal)
 
-ls()
+# green - > #37AE0F
+#860FAE perennial #AE0F86 annual
+
+pal <- c('#37C864', '#30A934', '#AE0F86', '#860FAE', #
+         '#DD4513', '#D4D7D4', '#e7b013')
+show_col(pal)
 
 rm(annforb, annforb_pal, annualgrass, annualgrass_pal, juni_pal, juniper,
    mixedmtn ,mixedmtn_pal, perforb, perforb_pal, pergrass, 

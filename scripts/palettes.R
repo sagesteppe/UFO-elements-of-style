@@ -1,4 +1,4 @@
-public_lands_colours <- setNames(
+public_lands_pal <- setNames(
   
   # these manually transcribed from the H-1553-Publications Standards Manual
   # Handbook - hopefully no errors.
@@ -19,10 +19,12 @@ public_lands_colours <- setNames(
   ), 
   
   c( # names
-    'BLM', 'USFS', 'NPS', 'FWS', 'USBR', 'TRIB', 'DOD', 'OTHF', 'SLB', 'PVT', 'CITY_CNTY_SDC_SDNR_SPR'
-  ))
+    'BLM', 'USFS', 'NPS', 'FWS', 'USBR', 'TRIB', 'DOD', 'OTHF', 'SLB', 'PVT', 'CITY_CNTY_SDC_SDNR_SPR')
+)
 
-strata_colours <- setNames(
+# scales::show_col(public_lands_pal) 
+
+strata_pal <- setNames(
   
   #' these colours were selected via extraction of colour hex's from images using
   #' the RImagePalette package. Thanks to Megan Bashfor taking multiple of the 
@@ -33,5 +35,19 @@ strata_colours <- setNames(
   
 )
 
-# scales::show_col(strata_colours) 
-# scales::show_col(public_lands_colours) 
+# scales::show_col(strata_pal) 
+
+
+lifeform_pal <- setNames(
+  
+  #' these colours were largely influenced by extraction of colour from images and
+  #' then refined using canva. similar strata are closer in color space
+  #' than less similar strata. 
+  
+  c('#37C864', '#30A934', '#AE0F86', '#860FAE','#DD4513', '#D4D7D4', '#e7b013'),
+  c('AG', 'PG', 'AF', 'PF', 'T', 'SH', 'SU')
+  
+)
+
+
+# scales::show_col(lifeform_pal) 
