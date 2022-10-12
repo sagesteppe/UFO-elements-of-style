@@ -117,7 +117,7 @@ plot(resin) +
   labs(title = 'Comparision of Sepal Length in Iris Species') 
 
 
-# some example data is below not totally accurate though must refactor
+# some example data is below not totally accurate though must re-factor
 
 strata_pal_test <- c("setosa" = "#4A5A28", "versicolor" = "#ADB1B9", "virginica" = "#CEB88E")
 
@@ -154,3 +154,85 @@ my_comparisons <- my_means %>%
     
     scale_colour_manual(values = strata_pal_test) +
     theme(legend.position = 'none')
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+stacked_prop_drawer <- function(data, response_val, response_cat, grp1, grp2,
+                                 alpha){
+    
+    #' this function serves to draw stacked proportion barcharts  for the UFO AIM
+    #' year analysis, these serve to show the sample size, and binomial breakdown
+    #' within the sample such as mortality. it inherits it's aesthetics from a
+    #' custom theme developed for this purpose 'theme_prop_bar'
+    #' 
+    #' Inputs : 
+    #' data - a data frame containing all variables for the plot
+    #' response_val - a numerical response. 
+    #' response_cat - a category for the response
+    #' group1 - relevant grouping variable - e.g. 'treatment'
+    #' group2 - variable to facet by, e.g. year
+    #' alpha - alpha value for p-value, defauts to 0.2 for CI of 80%
+    
+  if(missing(alpha)) {
+    alpha = 0.2
+  }
+  
+  response_val <- enquo(response_val)
+  response_cat <- enquo(response_cat)
+  grp1 <- enquo(grp1)
+  grp2 <- enquo(grp2)
+  
+  CInterval <- data %>% 
+    group_by(!!grp1, !!grp2, !!response_cat) %>% 
+    mutate(grp_total = sum(!!response_val)) %>% 
+    add_count(name = 'no_obs') %>% 
+    mutate(
+      t = qt((1-alpha)/2 + .5, n()-1),
+      se = sd(!!response_val) / sqrt(no_obs),
+      CI = t*se) %>% 
+    distinct(spray, year, !!response_cat, .keep_all = T) %>% 
+    select(!!grp1, !!grp2, !!response_cat, CI, grp_total, !!response_val)
+  
+ # Confidence interval generation
+  
+  ordered_responses <- distinct(data, !!response_cat) %>% pull()
+  
+  CInterval_upper <- CInterval %>% 
+    ungroup(!!response_cat) %>% 
+    mutate(grp_total = sum(grp_total),
+           pl_bar = grp_total - CI,
+           pu_bar = grp_total + CI) %>% 
+    filter(!!response_cat == ordered_responses[1])
+  
+  CInterval_lower <- CInterval %>% 
+    mutate(grp_total = sum(grp_total),
+           ll_bar = grp_total - CI,
+           lu_bar = grp_total + CI) %>% 
+    filter(!!response_cat == ordered_responses[2])
+  
+  myplot <- ggplot(data, aes(y = !!response_val, x = !!grp1, fill = !!response_cat)) +
+    geom_bar(position="stack", stat="identity") +
+    facet_wrap(vars(!!grp2), nrow = 1) +
+    geom_linerange(data = CInterval_upper, 
+                   aes(x=spray, ymin= pl_bar, ymax= pu_bar), 
+                   colour="black", alpha=0.9) +
+    geom_linerange(data = CInterval_lower, 
+                   aes(x=spray, ymin= ll_bar, ymax= lu_bar), 
+                   colour="black", alpha=0.9) +
+    theme_prop_bar() +
+    theme(strip.background = element_blank() ) +
+    labs(title = ' this is a test') +
+    scale_fill_manual(values = c('dead' = '#91A4C3', 
+                                 'live' = '#C3B091'))
+  
+    return(myplot)
+}
