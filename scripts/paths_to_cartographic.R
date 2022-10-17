@@ -25,3 +25,6 @@ nm_and_nca <- st_read(
 
 tabeguache <- st_read(
   file.path(p2carto, vector_data[grep('*Tabeguache*', vector_data)]), quiet = T)
+
+wsa <- st_read(
+  file.path(p2carto, vector_data[grep('*WSA*', vector_data)]), quiet = T)

@@ -1,10 +1,8 @@
-library(here)
 library(sf)
 library(tidyverse)
 
 # nearly all of these datasets occur across the state of colorado, here we 
 # reduce their spatial extents to an area within 50mi of the UFO field office
-
 
 # Import template
 p2carto <- '/media/sagesteppe/ExternalHD/UFO_cartography'
@@ -26,7 +24,7 @@ gtlf_roads <- st_read(
   file.path(p2carto, vector_data[grep('*GTLF*', vector_data)]), quiet = T)
 
 padus <- st_read(
-  file.path(p2carto, vector_data[grep('PAD.*Combined*', vector_data)]), quiet = T)
+  file.path(p2carto, vector_data[grep('PAD.*Fee*', vector_data)]), quiet = T)
 
 nm_and_nca <- st_read(
   file.path(p2carto, vector_data[grep('*NCA*', vector_data)]), quiet = T)
@@ -34,11 +32,13 @@ nm_and_nca <- st_read(
 tabeguache <- st_read(
   file.path(p2carto, vector_data[grep('*Tabeguache*', vector_data)]), quiet = T)
 
+wsa <- st_read(
+  file.path(p2carto, vector_data[grep('*WSA*', vector_data)]), quiet = T)
 
 # subset datasets for FO
 
 unc_bbox <- administrative_boundaries %>%
-  filter(ADMU_NAME == 'UNCOMPAHGRE FIELD OFFICE') %>% 
+  filter(FIELD_O == 'UNCOMPAHGRE') %>% 
   st_buffer(8046) %>% 
   st_bbox %>% 
   st_as_sfc() %>% 
@@ -80,15 +80,30 @@ st_intersection(unc_bbox, nm_and_nca) %>%
            file.path(p2carto, vector_data[grep('*NCA*', vector_data)]), 
            append = F)
 
-
-st_intersection(st_transform(unc_bbox, st_crs(padus)), padus) %>% 
+padus <- st_intersection(st_transform(unc_bbox, st_crs(padus)), padus) %>% 
   st_transform(26913) %>% 
-  select(Own_Type, Own_Name, d_Own_Name, Loc_Own, Des_Tp, d_Des_Tp) %>% 
+  select(Own_Type, Own_Name, d_Own_Name, Mang_Type) %>% 
+  rename(geometry = x) %>% 
+  st_set_geometry('geometry') 
+
+padus <- padus %>% 
+  mutate(Own_Name = case_when(
+    Own_Name %in% c('CITY', 'CNTY', 'SDNR', 'SFW', 'SPR', 'OTHS', 'REG') ~ 'CITY_CNTY_SDC_SDNR_SPR', 
+    Own_Name %in% c('NGO','PVT') ~ 'PVT',
+    TRUE ~ Own_Name
+  )) %>% 
+  group_by(Own_Name) %>% 
+  st_write(., 
+           file.path(p2carto, vector_data[grep('PAD.*Fee*', vector_data)]), 
+           append = F)
+
+st_intersection(unc_bbox, wsa) %>% 
+  select(NLCS_NAME) %>% 
   rename(geometry = x) %>% 
   st_set_geometry('geometry') %>% 
-  st_write(., 
-           file.path(p2carto, vector_data[grep('PAD.*Combined*', vector_data)]), 
-           append = F)
+  st_write(.,
+    file.path(p2carto, vector_data[grep('*WSA*', vector_data)]), append = F)
+
 
 rm(unc_bbox, padus, nm_and_nca, grouse, administrative_boundaries, acec)
 
@@ -140,5 +155,6 @@ tabeguache %>%
 
 
 rm(tabeguache, p2carto, vector_data, administrative_boundaries)
+
 
 
