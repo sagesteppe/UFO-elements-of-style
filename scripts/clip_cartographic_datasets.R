@@ -10,6 +10,7 @@ library(tidyverse)
 p2carto <- '/media/sagesteppe/ExternalHD/UFO_cartography'
 vector_data <- list.files(p2carto, recursive = T, pattern = 'shp$')
 
+
 acec <- st_read(
   file.path(p2carto, vector_data[grep('*ACEC*', vector_data)]), quiet = T)
 
@@ -95,11 +96,30 @@ rm(unc_bbox, padus, nm_and_nca, grouse, administrative_boundaries, acec)
 # these are clipped to the extent of the field office. 
 UFO_ADMU <- filter(administrative_boundaries, FIELD_O == 'UNCOMPAHGRE')
 
-st_intersection(UFO_ADMU, allotments) %>%  # PROBLEMS WITH GEOMETRY
+allotments <- st_intersection(UFO_ADMU, allotments) %>%  # PROBLEMS WITH GEOMETRY
   select(ALLOT_NAME, ALLOT_NO) %>% 
-  st_write(., 
+  st_as_sf() %>% 
+  mutate(tempID = 1:n())
+
+allotments_pt <- allotments %>% 
+  st_collection_extract("POINT") %>% 
+  st_buffer(1) %>% 
+  group_by(ALLOT_NO) %>% 
+  mutate(geometry = st_union(geometry)) %>% 
+  distinct()
+allotments_line <- allotments %>% 
+  st_collection_extract("LINESTRING") %>% 
+  st_buffer(1) %>% 
+  group_by(ALLOT_NO) %>% 
+  mutate(geometry = st_union(geometry)) %>% 
+  distinct()
+allotments <- allotments %>% 
+  filter(!tempID  %in% c(allotments_pt$tempID, allotments_line$tempID)) %>% 
+  bind_rows(allotments_pt, allotments_line) %>% 
+  st_write(.,
            file.path(p2carto, vector_data[grep('*Grazing*', vector_data)]), 
            append = F)
+
 
 st_intersection(UFO_ADMU, gtlf_roads) %>% 
   select(PLAN_ALLOW, OHV_ROUTE_, OHV_DSGNTN, ROUTE_PRMR, PLAN_ROUTE, PLAN_ASSET, 
@@ -109,7 +129,7 @@ st_intersection(UFO_ADMU, gtlf_roads) %>%
            file.path(p2carto, vector_data[grep('*GTLF*', vector_data)]), 
            append = F)
 
-rm(UFO_ADMU, gtlf_roads)
+rm(UFO_ADMU, gtlf_roads, allotments_pt, allotments_line)
 
 # no spatial operations required
 
