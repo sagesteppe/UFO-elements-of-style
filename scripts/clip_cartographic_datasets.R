@@ -10,7 +10,6 @@ library(tidyverse)
 p2carto <- '/media/sagesteppe/ExternalHD/UFO_cartography'
 vector_data <- list.files(p2carto, recursive = T, pattern = 'shp$')
 
-
 acec <- st_read(
   file.path(p2carto, vector_data[grep('*ACEC*', vector_data)]), quiet = T)
 
@@ -113,13 +112,13 @@ allotments_line <- allotments %>%
   group_by(ALLOT_NO) %>% 
   mutate(geometry = st_union(geometry)) %>% 
   distinct()
-allotments <- allotments %>% 
+
+allotments %>% 
   filter(!tempID  %in% c(allotments_pt$tempID, allotments_line$tempID)) %>% 
   bind_rows(allotments_pt, allotments_line) %>% 
   st_write(.,
            file.path(p2carto, vector_data[grep('*Grazing*', vector_data)]), 
            append = F)
-
 
 st_intersection(UFO_ADMU, gtlf_roads) %>% 
   select(PLAN_ALLOW, OHV_ROUTE_, OHV_DSGNTN, ROUTE_PRMR, PLAN_ROUTE, PLAN_ASSET, 
@@ -129,7 +128,7 @@ st_intersection(UFO_ADMU, gtlf_roads) %>%
            file.path(p2carto, vector_data[grep('*GTLF*', vector_data)]), 
            append = F)
 
-rm(UFO_ADMU, gtlf_roads, allotments_pt, allotments_line)
+rm(UFO_ADMU, gtlf_roads, allotments_pt, allotments_line, allotments)
 
 # no spatial operations required
 
@@ -140,9 +139,6 @@ tabeguache %>%
            append = F)
 
 
-ggplot(padus) +
-  geom_sf()
-
-rm(tabeguache)
+rm(tabeguache, p2carto, vector_data, administrative_boundaries)
 
 
