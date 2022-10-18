@@ -1,9 +1,9 @@
 library(sf)
 library(tidyverse)
+library(ggspatial)
 
 p2carto <- '/media/sagesteppe/ExternalHD/UFO_cartography'
 vector_data <- list.files(p2carto, recursive = T, pattern = 'shp$')
-
 
 acec <- st_read(
   file.path(p2carto, vector_data[grep('*ACEC*', vector_data)]), quiet = T)
@@ -29,10 +29,12 @@ nm_and_nca <- st_read(
 tabeguache <- st_read(
   file.path(p2carto, vector_data[grep('*Tabeguache*', vector_data)]), quiet = T)
 
+wa <- st_read(
+  file.path(p2carto, vector_data[grep('*unofficial*', vector_data)]), quiet = T)
+
 wsa <- st_read(
   file.path(p2carto, vector_data[grep('*WSA*', vector_data)]), quiet = T)
 
-library(ggspatial)
 
 extent <- filter(administrative_boundaries, FIELD_O == 'UNCOMPAHGRE') %>%
   st_bbox()
@@ -79,10 +81,16 @@ ggPad %>%
 gg_plp <- public_lands_pal[c(unique(ggPad$Own_Name))]
 gg_plp <- gg_plp[order(names(gg_plp))]
 
+acec <- st_crop(acec, gg_extent)
+gr <- st_make_grid(acec, square = F , flat_topped =  T, n = c(10, 10))
+gr <- st_intersection(acec, gr)
+
 ggplot() +
   geom_sf(data = ggPad, aes(fill = Own_Name)) +
   geom_sf(data = gg, color = 'darkgreen', lwd = 1.5, 
           fill = public_lands_pal['BLM']) +
+  geom_sf(data = gr, fill = NA, color = 'grey25') +
+  geom_sf(data = wa) +
   
   coord_sf(xlim = c(gg_extent['xmin'], gg_extent['xmax']), 
            ylim = c(gg_extent['ymin'], gg_extent['ymax'])) +
@@ -93,7 +101,7 @@ ggplot() +
   
   labs(fill = 'Management:') +
   theme(legend.position = 'bottom') +
-  annotation_scale(location = "bl", width_hint = 0.25) +
+  annotation_scale(location = "bl", width_hint = 0.225) +
   annotation_north_arrow(location = "bl", which_north = "true", 
                          pad_x = unit(-0.1, "in"), 
                          pad_y = unit(0.25, "in"),
