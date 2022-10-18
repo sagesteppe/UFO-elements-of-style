@@ -1,7 +1,6 @@
 library(sf)
 library(tidyverse)
 library(ggspatial)
-library(ggmap)
 library(terra)
 
 p2carto <- '/media/sagesteppe/ExternalHD/UFO_cartography'
@@ -127,8 +126,12 @@ ggplot() +
     shape = guide_legend(order = 3)
   )
 
-rm(gg)
+rm(de)
  # Create Basemaps and Templates for the Dominguez Escalente NCA
+
+
+####################backed up !!!!!!!!!!
+
 
 de <- filter(nm_and_nca, NLCS_NAME
              =='Dominguez/Escalante National Conservation Area') 
@@ -139,14 +142,15 @@ extent <- de %>%
   st_as_sf()
 
 Pad <- st_intersection(extent, padus) %>% 
-  mutate(Own_Name = if_else(Own_Name == 'CITY_CNTY_SDC_SDNR_SPR', 'Local-State',
-                            Own_Name)) %>% 
-  filter(!Own_Name %in% c('NPS')) 
+  mutate(Own_Name = if_else(Own_Name == 'CITY_CNTY_SDC_SDNR_SPR', 'State', Own_Name))
+bbox <- st_bbox(extent)
 
 public_lands_pal1 <- public_lands_pal
 names(public_lands_pal1)[11] <- 'Local-State'
-plp <- public_lands_pal1[c(unique(Pad$Own_Name))]
+plp <- public_lands_pal[c(unique(Pad$Own_Name))]
 plp <- plp[order(names(plp))]
+names(plp)[2] <- 'Local-State'
+plp <- plp[1:3]
 
 ACEC <- st_crop(acec, bbox)
 acec_grid <- st_make_grid(ACEC, square = F , flat_topped =  T, n = c(25, 25))
@@ -183,8 +187,9 @@ ggplot() +
                      values =  15) +
   
   labs(fill = 'Management', 
-       title = 'AIM Plots Sampled in the Vicinity of\n
-       Dominguez-Escalenta NCA') +
+       title = 'AIM Plots Sampled in the Vicinity of\nDominguez-Escalente NCA') +
+  
+  labs(fill = 'Management:') +
   annotation_scale(location = "bl", width_hint = 0.225, 
                    pad_x = unit(0.15, "in"), 
                    pad_y = unit(0.2, "in"),) +
@@ -197,5 +202,3 @@ ggplot() +
     fill = guide_legend(order = 1),
     shape = guide_legend(order = 3)
   )
-
-rm(de)
