@@ -8,6 +8,9 @@ library(tidyverse)
 p2carto <- '/media/sagesteppe/ExternalHD/UFO_cartography'
 vector_data <- list.files(p2carto, recursive = T, pattern = 'shp$')
 
+aim <- st_read(
+  file.path(p2carto, vector_data[grep('*Plots*', vector_data)]), quiet = T)
+
 acec <- st_read(
   file.path(p2carto, vector_data[grep('*ACEC*', vector_data)]), quiet = T)
 
@@ -29,6 +32,9 @@ padus <- st_read(
 nm_and_nca <- st_read(
   file.path(p2carto, vector_data[grep('*NCA*', vector_data)]), quiet = T)
 
+streams <- st_read(
+  file.path(p2carto, vector_data[grep('*Streams*', vector_data)]), quiet = T)
+
 tabeguache <- st_read(
   file.path(p2carto, vector_data[grep('*Tabeguache*', vector_data)]), quiet = T)
 
@@ -47,6 +53,15 @@ unc_bbox <- administrative_boundaries %>%
   st_as_sfc() %>% 
   st_as_sf() %>% 
   st_set_precision(1)
+
+st_intersection(st_transform(unc_bbox, st_crs(aim)), aim) %>% 
+  select(PlotKey, PlotID) %>% 
+  st_transform(st_crs(unc_bbox)) %>% 
+  rename(geometry = x) %>% 
+  st_set_geometry('geometry') %>% 
+  st_write(., 
+           file.path(p2carto, vector_data[grep('*Plots*', vector_data)]), 
+           append = F)
 
 st_intersection(unc_bbox, acec) %>% 
   select(ACEC_NAME, LUP_NAME, ACEC_ID) %>% 
@@ -100,6 +115,14 @@ padus <- padus %>%
            file.path(p2carto, vector_data[grep('PAD.*Fee*', vector_data)]), 
            append = F)
 
+st_intersection(unc_bbox, streams) %>% 
+  select(NAME) %>% 
+  rename(geometry = x) %>% 
+  st_set_geometry('geometry') %>% 
+  st_write(., 
+           file.path(p2carto, vector_data[grep('*Streams*', vector_data)]), 
+           append = F)
+
 st_intersection(unc_bbox, wsa) %>% 
   select(NLCS_NAME) %>% 
   rename(geometry = x) %>% 
@@ -115,7 +138,7 @@ st_intersection(st_transform(unc_bbox, st_crs(wa)), wa) %>%
   st_write(.,
            file.path(p2carto, vector_data[grep('*WSA*', vector_data)]), append = F)
 
-rm(unc_bbox, padus, nm_and_nca, grouse, administrative_boundaries, acec, wa)
+rm(unc_bbox, padus, nm_and_nca, grouse, administrative_boundaries, acec, wa, aim)
 
 # these are clipped to the extent of the field office. 
 UFO_ADMU <- filter(administrative_boundaries, FIELD_O == 'UNCOMPAHGRE')

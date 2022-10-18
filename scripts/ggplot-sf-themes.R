@@ -1,6 +1,8 @@
 library(sf)
 library(tidyverse)
 library(ggspatial)
+library(ggmap)
+library(terra)
 
 p2carto <- '/media/sagesteppe/ExternalHD/UFO_cartography'
 vector_data <- list.files(p2carto, recursive = T, pattern = 'shp$')
@@ -26,6 +28,9 @@ padus <- st_read(
 nm_and_nca <- st_read(
   file.path(p2carto, vector_data[grep('*NCA*', vector_data)]), quiet = T)
 
+streams <- st_read(
+  file.path(p2carto, vector_data[grep('*Streams*', vector_data)]), quiet = T)
+
 tabeguache <- st_read(
   file.path(p2carto, vector_data[grep('*Tabeguache*', vector_data)]), quiet = T)
 
@@ -35,10 +40,8 @@ wa <- st_read(
 wsa <- st_read(
   file.path(p2carto, vector_data[grep('*WSA*', vector_data)]), quiet = T)
 
-
 extent <- filter(administrative_boundaries, FIELD_O == 'UNCOMPAHGRE') %>%
   st_bbox()
-
 
 
 public_lands_pal <- setNames(
@@ -65,74 +68,100 @@ public_lands_pal <- setNames(
 
 gg <- filter(nm_and_nca, NLCS_NAME
                     =='Gunnison Gorge National Conservation Area') 
-gg_extent <- gg %>% 
+extent <- gg %>% 
   st_buffer(3218) %>% 
   st_bbox(gg) %>% 
   st_as_sfc() %>% 
   st_as_sf()
 
-ggPad <- st_intersection(gg_extent, padus) %>% 
+Pad <- st_intersection(extent, padus) %>% 
   filter(!Own_Type %in% c('LOC', 'JNT'))
-gg_extent <- st_bbox(gg_extent)
+bbox <- st_bbox(extent)
 
-ggPad %>% 
-  st_drop_geometry() %>% 
-  distinct(Own_Name)
-gg_plp <- public_lands_pal[c(unique(ggPad$Own_Name))]
-gg_plp <- gg_plp[order(names(gg_plp))]
+plp <- public_lands_pal[c(unique(Pad$Own_Name))]
+plp <- plp[order(names(plp))]
 
-acec <- st_crop(acec, gg_extent)
-gr <- st_make_grid(acec, square = F , flat_topped =  T, n = c(10, 10))
-gr <- st_intersection(acec, gr)
+ACEC <- st_crop(acec, bbox)
+acec_grid <- st_make_grid(acec, square = F , flat_topped =  T, n = c(10, 10))
+acec_grid <- st_intersection(acec, acec_grid)
 
 ggplot() +
-  geom_sf(data = ggPad, aes(fill = Own_Name)) +
-  geom_sf(data = gg, color = 'darkgreen', lwd = 1.5, 
-          fill = public_lands_pal['BLM']) +
-  geom_sf(data = gr, fill = NA, color = 'grey25') +
-  geom_sf(data = wa) +
+  geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.8) +
+  geom_sf(data = gg, aes(color = 'darkgreen'), lwd = 1.5, 
+          fill = NA, alpha = 0.8) +
+  geom_sf(data = wa, fill = rgb(254, 204, 92, max = 255), color = NA) +
+  geom_sf(data = acec_grid, fill = NA, aes(color = 'grey25'), alpha = 0.8) +
   
-  coord_sf(xlim = c(gg_extent['xmin'], gg_extent['xmax']), 
-           ylim = c(gg_extent['ymin'], gg_extent['ymax'])) +
+  coord_sf(xlim = c(bbox['xmin'], bbox['xmax']), 
+           ylim = c(bbox['ymin'], bbox['ymax'])) +
   
-  scale_fill_manual(values = gg_plp) +
+  scale_fill_manual(values = plp, limits = c("BLM", "NPS", "FWS")) +
   
   theme_void() +
   
   labs(fill = 'Management:') +
-  theme(legend.position = 'bottom') +
+  scale_color_identity(name = "Borders",
+                       breaks = c("darkgreen", "grey25"),
+                       labels = c("NCA", "ACEC"),
+                       guide = "legend") +
   annotation_scale(location = "bl", width_hint = 0.225) +
   annotation_north_arrow(location = "bl", which_north = "true", 
                          pad_x = unit(-0.1, "in"), 
                          pad_y = unit(0.25, "in"),
                          style = north_arrow_minimal)
 
+rm(gg)
+ # Create Basemaps and Templates for the Dominguez Escalente NCA
 
-library(rcartocolor)
+de <- filter(nm_and_nca, NLCS_NAME
+             =='Dominguez/Escalante National Conservation Area') 
+extent <- de %>% 
+  st_buffer(3218) %>% 
+  st_bbox(gg) %>% 
+  st_as_sfc() %>% 
+  st_as_sf()
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
+Pad <- st_intersection(extent, padus) %>% 
+  mutate(Own_Name = if_else(Own_Name == 'CITY_CNTY_SDC_SDNR_SPR', 'State', Own_Name))
+bbox <- st_bbox(extent)
 
-#######################
+plp <- public_lands_pal[c(unique(Pad$Own_Name))]
+plp <- plp[order(names(plp))]
+names(plp)[2] <- 'State'
+
+ACEC <- st_crop(acec, bbox)
+acec_grid <- st_make_grid(ACEC, square = F , flat_topped =  T, n = c(25, 25))
+acec_grid <- st_intersection(acec, acec_grid)
+ADMU <- st_crop(administrative_boundaries, bbox)
 
 ggplot() +
-  geom_sf(data = allotments, fill = NA) +
-  geom_sf(data = administrative_boundaries, fill = NA) +
+  geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.8) +
+  geom_sf(data = de, aes(color = 'darkgreen'), lwd = 1.5, 
+          fill = NA, alpha = 0.8) +
+  geom_sf(data = wa, fill = rgb(254, 204, 92, max = 255), color = NA) +
+  geom_sf(data = acec, fill = NA, aes(color = 'grey25'), alpha = 0.8) +
+  geom_sf(data = acec_grid, fill = NA)+
+  geom_sf(data = ADMU, fill = NA, aes(color = 'black')) +
   
-  coord_sf(xlim = c(extent['xmin'], extent['xmax']), 
-           ylim = c(extent['ymin'], extent['ymax'])) +
+  coord_sf(xlim = c(bbox['xmin'], bbox['xmax']), 
+           ylim = c(bbox['ymin'], bbox['ymax'])) +
+  
+  scale_fill_manual(values = plp) +
   
   theme_void() +
   
-  annotation_scale(location = "bl", width_hint = 0.2) +
+  scale_color_identity(name = "Borders",
+                       breaks = c("black", "darkgreen", "grey25"),
+                       labels = c("UFO / GJFO", "NCA", "ACEC"),
+                       guide = "legend") +
+  
+  labs(fill = 'Management:') +
+  annotation_scale(location = "bl", width_hint = 0.225, 
+                   pad_x = unit(0.15, "in"), 
+                   pad_y = unit(0.2, "in"),) +
   annotation_north_arrow(location = "bl", which_north = "true", 
-                         pad_x = unit(0.25, "in"), pad_y = unit(0.25, "in"),
+                         pad_x = unit(0.0, "in"), 
+                         pad_y = unit(0.3, "in"),
                          style = north_arrow_minimal)
 
+rm(de)
