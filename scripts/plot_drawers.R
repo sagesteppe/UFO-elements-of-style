@@ -5,8 +5,14 @@
 #' @param data - a data frame containing all variables for the plot
 #' @param response - a single column of the variable to map
 #' @param group - relevant grouping variable - expects character categorical
-#' @param @param col_pal - color palette e.g. 'strata_pal', or 'lifeform_pal'
-#' @export
+#' @param col_pal - color palette e.g. 'strata_pal', or 'lifeform_pal'
+#' @return a ggplot with the option to refine contents. 
+#' @example strata_pal_test <- c("setosa" = "#4A5A28", 
+#' "versicolor" = "#ADB1B9", "virginica" = "#CEB88E")
+#' iris_box <- boxplot_drawer(df = iris, response = Sepal.Length, 
+#'                     group = Species, col_pal = strata_pal_test)
+#' plot(iris_box) + labs(title = 'Comparision of Sepal Length in Iris Species') 
+#' @export 
 #' @seealso theme_boxplot
 boxplot_drawer <- function(df, response, group, col_pal){
  term <- as.formula(paste(enexpr(response), ' ~ ', enexpr(group)))
@@ -50,31 +56,42 @@ boxplot_drawer <- function(df, response, group, col_pal){
   return(ufo_boxplot)
 }
 
-# resin <- bbox_drawer(df = iris, response = Sepal.Length, 
-#                     group = Species, col_pal = strata_pal_test)
-#plot(resin) +
-#  labs(title = 'Comparision of Sepal Length in Iris Species') 
-# strata_pal_test <- c("setosa" = "#4A5A28", "versicolor" = "#ADB1B9", "virginica" = "#CEB88E")
- 
+
+#' Draws a stacked barchart to convey number of observations, a binomial response, 
+#' and confidence estimates of the response. 
+#'
+#' this function serves to draw stacked proportion barcharts  for the UFO AIM
+#' year analysis, these serve to show the sample size, and binomial breakdown
+#' within the sample such as mortality. it inherits it's aesthetics from a
+#' custom theme developed for this purpose 'theme_prop_bar'
+#' 
+#' @param data - a data frame containing all variables for the plot
+#' @param response_val - a numerical response. 
+#' @param response_cat - a category for the response
+#' @param group1 - relevant grouping variable - e.g. 'treatment'
+#' @param group2 - variable to facet by, e.g. year
+#' @param alpha - alpha value for p-value, defauts to 0.2 for CI of 80%
+#' @example is <- InsectSprays %>% 
+#' mutate(
+#'  ID = 1:n(), .before = count) %>% 
+#'  mutate(
+#'    year = rep(2021:2022, times = 6, each = 6),
+#'    dead = floor(runif(n(), min=0, max=count)),
+#'    live = count - dead) %>% 
+#'  pivot_longer(cols = dead:live, values_to = 'tot_count', names_to = 'response')
+#'  
+#' head(is)
+#' 
+#' is_stacked_prop <-  stacked_prop_drawer(data = is, response_val = tot_count, 
+#' response_cat = response, grp1 = spray, grp2 = year)
+#' 
+#' is_stacked_prop + labs(title = 'simulated dataset mortality in insects')
+#' 
 #' @export
 #' @rdname UFO_EoS
- 
 stacked_prop_drawer <- function(data, response_val, response_cat, grp1, grp2,
                                 alpha, ...){
-  
-  #' this function serves to draw stacked proportion barcharts  for the UFO AIM
-  #' year analysis, these serve to show the sample size, and binomial breakdown
-  #' within the sample such as mortality. it inherits it's aesthetics from a
-  #' custom theme developed for this purpose 'theme_prop_bar'
-  #' 
-  #' Inputs : 
-  #' data - a data frame containing all variables for the plot
-  #' response_val - a numerical response. 
-  #' response_cat - a category for the response
-  #' group1 - relevant grouping variable - e.g. 'treatment'
-  #' group2 - variable to facet by, e.g. year
-  #' alpha - alpha value for p-value, defauts to 0.2 for CI of 80%
-  
+
   if(missing(alpha)) {
     alpha = 0.2
   }
@@ -131,17 +148,17 @@ stacked_prop_drawer <- function(data, response_val, response_cat, grp1, grp2,
 }
 
 
-# is <- InsectSprays %>% 
-#   mutate(
-#     ID = 1:n(), .before = count) %>% 
-#   mutate(
-#     year = rep(2021:2022, times = 6, each = 6),
-#     dead = floor(runif(n(), min=0, max=count)),
-#     live = count - dead) %>% 
-#   pivot_longer(cols = dead:live, values_to = 'tot_count', names_to = 'response')
+is <- InsectSprays %>% 
+   mutate(
+     ID = 1:n(), .before = count) %>% 
+   mutate(
+     year = rep(2021:2022, times = 6, each = 6),
+     dead = floor(runif(n(), min=0, max=count)),
+     live = count - dead) %>% 
+   pivot_longer(cols = dead:live, values_to = 'tot_count', names_to = 'response')
  
  
-# stacked_prop_drawer(data = is, response_val = tot_count, response_cat = response,
-#                     grp1 = spray, grp2 = year) +
-#   labs(title = 'simulated dataset mortality in insects')
+ stacked_prop_drawer(data = is, response_val = tot_count, response_cat = response,
+                     grp1 = spray, grp2 = year) +
+   labs(title = 'simulated dataset mortality in insects')
  
