@@ -60,7 +60,7 @@ theme_bbox <- function(){
 
 
 stacked_prop_drawer <- function(data, response_val, response_cat, grp1, grp2,
-                                 alpha){
+                                 alpha, ...){
     
     #' this function serves to draw stacked proportion barcharts  for the UFO AIM
     #' year analysis, these serve to show the sample size, and binomial breakdown
@@ -92,7 +92,7 @@ stacked_prop_drawer <- function(data, response_val, response_cat, grp1, grp2,
       t = qt((1-alpha)/2 + .5, n()-1),
       se = sd(!!response_val) / sqrt(no_obs),
       CI = t*se) %>% 
-    distinct(spray, year, !!response_cat, .keep_all = T) %>% 
+    distinct(!!grp1, !!grp2, !!response_cat, .keep_all = T) %>% 
     select(!!grp1, !!grp2, !!response_cat, CI, grp_total, !!response_val)
   
  # Confidence interval generation
@@ -123,9 +123,14 @@ stacked_prop_drawer <- function(data, response_val, response_cat, grp1, grp2,
                    colour="black", alpha=0.9) +
     theme_prop_bar() +
     theme(strip.background = element_blank() ) +
-    labs(title = ' this is a test') +
+    labs(title = 'reed shot hardcoding shit') +
     scale_fill_manual(values = c('dead' = '#91A4C3', 
                                  'live' = '#C3B091'))
   
     return(myplot)
 }
+
+stacked_prop_drawer(data = bulldraw, response_val = establishment, 
+                    response_cat = ALIVE/DEAD, group1 = treatment,
+                    group2 = year, alpha = 0.2)
+
