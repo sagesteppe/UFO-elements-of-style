@@ -10,7 +10,7 @@ library(ggpubr)
 
 #' @export
 #' @rdname UFO_EoS
-theme_bbox <- function(){ 
+theme_boxplot <- function(){ 
     font = "sans"   #assign font family up front
     base_size = 12
     legend.position = 'none'

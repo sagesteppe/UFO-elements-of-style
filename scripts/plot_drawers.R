@@ -1,17 +1,15 @@
+#' Draw boxplots in the style of Tukey with test statistics on them
+#' 
+#' This function serves to draw basic boxplots for the UFO AIM 5 year analysis
+#' it inherits it's aestheics from a custom theme developed for this purpose
+#' @param data - a data frame containing all variables for the plot
+#' @param response - a single column of the variable to map
+#' @param group - relevant grouping variable - expects character categorical
+#' @param @param col_pal - color palette e.g. 'strata_pal', or 'lifeform_pal'
 #' @export
-#' @rdname UFO_EoS
-bbox_drawer <- function(df, response, group, col_pal){
-  
-  #' this function serves to draw basic boxplots for the UFO AIM 5 year analysis
-  #' it inherits it's aestheics from a custom theme developed for this purpose
-  #' 
-  #' Inputs : 
-  #' data - a data frame containing all variables for the plot
-  #' response - a single column of the variable to map
-  #' groups - relevant grouping variable - expects character categorical
-  #' col_pal - color palette e.g. 'strata_pal', or 'lifeform_pal'
-  
-  term <- as.formula(paste(enexpr(response), ' ~ ', enexpr(group)))
+#' @seealso theme_boxplot
+boxplot_drawer <- function(df, response, group, col_pal){
+ term <- as.formula(paste(enexpr(response), ' ~ ', enexpr(group)))
   
   response <- enquo(response)
   group <- enquo(group)
@@ -44,7 +42,7 @@ bbox_drawer <- function(df, response, group, col_pal){
                        tip.length = 0, vjust = 0.25) +
     stat_compare_means(label.y = min_v * 0.85)  +
     
-    theme_bbox() +
+    theme_boxplot() +
     
     scale_colour_manual(values = col_pal) +
     theme(legend.position = 'none')
