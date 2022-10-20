@@ -71,6 +71,9 @@ boxplot_drawer <- function(df, response, group, col_pal){
 #' @param group1 - relevant grouping variable - e.g. 'treatment'
 #' @param group2 - variable to facet by, e.g. year
 #' @param alpha - alpha value for p-value, defauts to 0.2 for CI of 80%
+#' @param fills_vals - vector of length two of the fill variable (response_cat)
+#' @param fill_cols - a vector of length two of the color for the fill variable
+#' @param rowN - number of rows to facet by
 #' @example is <- InsectSprays %>% 
 #' mutate(
 #'  ID = 1:n(), .before = count) %>% 
@@ -82,30 +85,36 @@ boxplot_drawer <- function(df, response, group, col_pal){
 #'  
 #' head(is)
 #' 
-#' is_stacked_prop <-  stacked_prop_drawer(data = is, response_val = tot_count, 
-#' response_cat = response, grp1 = spray, grp2 = year)
-#' 
-#' is_stacked_prop + labs(title = 'simulated dataset mortality in insects')
+#'  stacked_prop_drawer(data = is, response_val = tot_count, 
+#'     response_cat = response,
+#'     grp1 = spray, grp2 = year,
+#'     rowN = 2,
+#'     fill_vals =  c('dead', 'live'), 
+#'     fill_cols = c('#91A4C3', '#C3B091')) +
+#'     labs(title = 'Effect of Insecticides on Insect Mortality') # note you
+#'     # can just add elements onto the function in line. 
 #' 
 #' @export
 #' @rdname UFO_EoS
 stacked_prop_drawer <- function(data, response_val, response_cat, grp1, grp2,
-                                alpha, ...){
+                                alpha, fill_vals, fill_cols, rowN){
 
   if(missing(alpha)) {
     alpha = 0.2
   }
   
+  names(fill_cols) <- fill_vals
+  
   response_val <- enquo(response_val)
   response_cat <- enquo(response_cat)
   grp1 <- enquo(grp1)
   grp2 <- enquo(grp2)
-  
+
   CInterval <- data %>% 
-    group_by(!!grp1, !!grp2, !!response_cat) %>% 
-    mutate(grp_total = sum(!!response_val)) %>% 
-    add_count(name = 'no_obs') %>% 
-    mutate(
+    dplyr::group_by(!!grp1, !!grp2, !!response_cat) %>% 
+    dplyr::mutate(grp_total = sum(!!response_val)) %>% 
+    dplyr::add_count(name = 'no_obs') %>% 
+    dplyr::mutate(
       t = qt((1-alpha)/2 + .5, n()-1),
       se = sd(!!response_val) / sqrt(no_obs),
       CI = t*se) %>% 
@@ -129,36 +138,25 @@ stacked_prop_drawer <- function(data, response_val, response_cat, grp1, grp2,
            lu_bar = grp_total + CI) %>% 
     filter(!!response_cat == ordered_responses[2])
   
+  # style the labels
+#  data <- data %>% 
+#    dplyr::mutate(dplyr::across(.cols = c(!!response_cat,
+#                                          !!grp1, !!grp2), ~ str_to_sentence(.x)))
+  # CAPITALIE THE VAR NAMES - PULL AND PLOT DIRECTLY REED !
+  
   myplot <- ggplot(data, aes(y = !!response_val, x = !!grp1, fill = !!response_cat)) +
     geom_bar(position="stack", stat="identity") +
-    facet_wrap(vars(!!grp2), nrow = 1) +
+    facet_wrap(vars(!!grp2), nrow = rowN) +
     geom_linerange(data = CInterval_upper, 
-                   aes(x=spray, ymin= pl_bar, ymax= pu_bar), 
-                   colour="black", alpha=0.9) +
+                   aes(x = !!grp1, ymin = pl_bar, ymax = pu_bar), 
+                   colour="black", alpha = 0.9) +
     geom_linerange(data = CInterval_lower, 
-                   aes(x=spray, ymin= ll_bar, ymax= lu_bar), 
-                   colour="black", alpha=0.9) +
+                   aes(x = !!grp1, ymin = ll_bar, ymax = lu_bar), 
+                   colour="black", alpha = 0.9) +
     theme_prop_bar() +
     theme(strip.background = element_blank() ) +
-    labs(title = 'reed shot hardcoding shit') +
-    scale_fill_manual(values = c('dead' = '#91A4C3', 
-                                 'live' = '#C3B091'))
+    scale_fill_manual(values = fill_cols)
   
   return(myplot)
+
 }
-
-
-is <- InsectSprays %>% 
-   mutate(
-     ID = 1:n(), .before = count) %>% 
-   mutate(
-     year = rep(2021:2022, times = 6, each = 6),
-     dead = floor(runif(n(), min=0, max=count)),
-     live = count - dead) %>% 
-   pivot_longer(cols = dead:live, values_to = 'tot_count', names_to = 'response')
- 
- 
- stacked_prop_drawer(data = is, response_val = tot_count, response_cat = response,
-                     grp1 = spray, grp2 = year) +
-   labs(title = 'simulated dataset mortality in insects')
- 
