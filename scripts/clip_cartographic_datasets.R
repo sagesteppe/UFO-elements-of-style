@@ -26,11 +26,14 @@ grouse <- st_read(
 gtlf_roads <- st_read(
   file.path(p2carto, vector_data[grep('*GTLF*', vector_data)]), quiet = T)
 
-padus <- st_read(
-  file.path(p2carto, vector_data[grep('PAD.*Fee*', vector_data)]), quiet = T)
+mlra <- st_read(
+  file.path(p2carto, vector_data[grep('*MLRA*', vector_data)]), quiet = T)
 
 nm_and_nca <- st_read(
   file.path(p2carto, vector_data[grep('*NCA*', vector_data)]), quiet = T)
+
+padus <- st_read(
+  file.path(p2carto, vector_data[grep('PAD.*Fee*', vector_data)]), quiet = T)
 
 streams <- st_read(
   file.path(p2carto, vector_data[grep('*Streams*', vector_data)]), quiet = T)
@@ -89,6 +92,15 @@ st_intersection(unc_bbox, grouse) %>%
            file.path(p2carto, vector_data[grep('*Grouse*', vector_data)]),
            append = F)
 
+st_intersection(st_transform(unc_bbox, st_crs(mlra)), mlra) %>% 
+  st_transform(26913) %>% 
+  select(starts_with('MLRA')) %>% 
+  rename(geometry = x) %>% 
+  st_set_geometry('geometry')  %>% 
+  st_write(., 
+           file.path(p2carto, vector_data[grep('*MLRA', vector_data)]),
+           append = F)
+
 st_intersection(unc_bbox, nm_and_nca) %>% 
   filter(NLCS_NAME != 'Canyons of the Ancients National Monument') %>% 
   select(NLCS_NAME, NLCS_TYPE) %>% 
@@ -138,7 +150,8 @@ st_intersection(st_transform(unc_bbox, st_crs(wa)), wa) %>%
   st_write(.,
            file.path(p2carto, vector_data[grep('*WSA*', vector_data)]), append = F)
 
-rm(unc_bbox, padus, nm_and_nca, grouse, administrative_boundaries, acec, wa, aim)
+rm(unc_bbox, padus, nm_and_nca, grouse, administrative_boundaries, acec, wa, aim,
+   mlra)
 
 # these are clipped to the extent of the field office. 
 UFO_ADMU <- filter(administrative_boundaries, FIELD_O == 'UNCOMPAHGRE')
@@ -189,5 +202,4 @@ tabeguache %>%
 
 rm(tabeguache, p2carto, vector_data, administrative_boundaries)
 
-
-
+  
