@@ -27,11 +27,12 @@ public_lands_pal <- setNames(
 strata_pal <- setNames(
   
   #' these colours were selected via extraction of colour hex's from images using
-  #' the RImagePalette package. Thanks to Megan Bashfor taking multiple of the 
+  #' the RImagePalette package. Thanks to Megan Bach for taking multiple of the 
   #' images which were used in the process.
 
-  c('#4A5A28', '#ADB1B9', '#CEB88E', '#574039', '#B64841'),
-  c('PJ', 'SS', 'SD', 'MMS', 'AS')
+  c('#4A5A28', '#ADB1B9', '#CEB88E', '#574039', '#B64841',
+    '#1357a6', '#1B1212', '#F9E076', '#39993A', '#00688B'),
+  c('PJ', 'SS', 'SD', 'MMS', 'AS', 'RI', 'OT', 'GR', 'PP', 'MC')
   
 )
 
