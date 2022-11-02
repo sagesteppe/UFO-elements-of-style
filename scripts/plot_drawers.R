@@ -160,3 +160,94 @@ stacked_prop_drawer <- function(data, response_val, response_cat, grp1, grp2,
   return(myplot)
 
 }
+
+
+#' Draws a dodged set of bar charts to show proportional data
+#'
+#' this function serves to draw side by side barcharts (really with geom_col)  
+#' for the UFO AIM year analysis, it can take on proportions with many values, not
+#' just binomial outcomes. 
+#'
+#' @param data - a data frame containing all variables for the plot
+#' @param response_val - a numerical response.
+#' @param response_cat - a category for the response
+#' @param group1 - relevant grouping variable - e.g. 'treatment'
+#' @param group2 - variable to facet by, e.g. year
+#' @param alpha - alpha value for p-value, defaults to 0.2 for CI of 80%
+#' @param fills_vals - vector of length two of the fill variable (response_cat)
+#' @param fill_cols - a vector of length two of the color for the fill variable
+#' @param rowN - number of rows to facet by, defaults to 1
+#' @param minCIv - a number of the minimum value a confidence interval can extent to
+#' @param maxCIv - a number of the minimum value a confidence interval can extent to
+#' @param dodgeV value to dodge the cols by
+#' @param errorT transparency for the error bars, defaults to 0.5
+#' @param errorW width for error bars, defaults to 0.3
+#' @example is <- InsectSprays %>%
+#' rowid_to_column(var = "ID") %>%
+#'  mutate(
+#'    year = rep(2021:2022, times = 6, each = 6),
+#'    dead = floor(runif(nrow(.), min=0, max=count)),
+#' live = count - dead,
+#'    instar = floor(runif(nrow(.), min = 0, max = count))
+#'  ) %>% 
+#'  rowwise()  %>% 
+#'  mutate(count = sum(dead, live,instar)) %>% 
+#'  mutate(across(dead:instar,  ~ (.x/count) * 100)) %>% 
+#'  pivot_longer(cols = dead:instar, values_to = 'percent', names_to = 'response')
+#'  
+#' head(is)
+#'
+#' dodged_drawer(data = is, response_val = percent,
+#' response_cat = response,
+#' grp1 = spray, grp2 = year, rowN = 1, 
+#' fill_vals =  c('dead', 'live', 'instar'),
+#' fill_cols = c('#91A4C3', '#C3B091', '#183A91')) +
+#'  labs(title = 'Effect of Insecticides on Insect Mortality') +
+#'  theme_bw()
+#'
+#' @export
+#' @rdname UFO_EoS
+#' 
+dodged_drawer <- function(data, response_val, response_cat, grp1, grp2,
+                          fill_vals, fill_cols, alpha, rowN,
+                          minCIv, maxCIv, dodgeV, errorT, errorW){
+  
+  names(fill_cols) <- fill_vals
+  response_val <- enquo(response_val)
+  response_cat <- enquo(response_cat)
+  grp1 <- enquo(grp1)
+  grp2 <- enquo(grp2)
+  
+  if(missing(errorW)){errorW <- 0.3}
+  if(missing(errorT)){errorT <- 0.5}
+  if(missing(alpha)){alpha <- 1-0.2}
+  if(missing(rowN)){rowN <- 1}
+  if(missing(minCIv)){minCIv <- -Inf}
+  if(missing(maxCIv)){maxCIv <- Inf}
+  if(missing(dodgeV)){dodgeV <- 1}
+  
+  sumSE <- Rmisc::summarySE(is, measurevar = quo_name(response_val),
+                            groupvars = c(quo_name(grp1), quo_name(grp2),
+                                          quo_name(response_cat)),
+                            conf.interval = alpha) %>% 
+    dplyr::mutate(ci_low = !!response_val - ci, 
+                  ci_high = !!response_val + ci,
+                  ci_low = if_else(ci_low < minCIv, 0, ci_low),
+                  ci_high = if_else(ci_low > maxCIv, 100, ci_high))
+  
+  dodge <- position_dodge(width = dodgeV)
+  myplot <- ggplot(sumSE, 
+                   aes(y = !!response_val, x = !!grp1, fill = !!response_cat)) +
+    geom_col(position = dodge, stat = "identity") +
+    theme(strip.background = element_blank() ) +
+    scale_fill_manual(values = fill_cols) +
+    facet_wrap(vars(!!grp2), nrow = rowN) +
+    geom_errorbar(aes(ymin = ci_low, ymax = ci_high),
+                  width = errorW, position = dodge, alpha = errorT
+    ) +
+    scale_y_continuous(expand = expansion(mult = c(0, .1)))
+  
+  
+  return(myplot)
+  
+}
