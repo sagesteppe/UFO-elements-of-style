@@ -220,13 +220,13 @@ dodged_drawer <- function(data, response_val, response_cat, grp1, grp2,
   
   if(missing(errorW)){errorW <- 0.3}
   if(missing(errorT)){errorT <- 0.5}
-  if(missing(alpha)){alpha <- 1-0.2}
+  if(missing(alpha)){alpha <- 1-0.2} else {alpha <- 1 - alpha}
   if(missing(rowN)){rowN <- 1}
   if(missing(minCIv)){minCIv <- -Inf}
   if(missing(maxCIv)){maxCIv <- Inf}
   if(missing(dodgeV)){dodgeV <- 1}
   
-  sumSE <- Rmisc::summarySE(is, measurevar = quo_name(response_val),
+  sumSE <- Rmisc::summarySE(data, measurevar = quo_name(response_val),
                             groupvars = c(quo_name(grp1), quo_name(grp2),
                                           quo_name(response_cat)),
                             conf.interval = alpha) %>% 
