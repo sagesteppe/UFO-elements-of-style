@@ -66,7 +66,7 @@ st_intersection(st_transform(unc_bbox, st_crs(aim)), aim) %>%
            file.path(p2carto, vector_data[grep('*Plots*', vector_data)]), 
            append = F)
 
-st_intersection(unc_bbox, acec) %>% 
+ACEC1 <- st_intersection(unc_bbox, acec) %>% 
   select(ACEC_NAME, LUP_NAME, ACEC_ID) %>% 
   rename(geometry = x) %>% 
   st_set_geometry('geometry') %>% 
