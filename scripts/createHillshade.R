@@ -1,39 +1,58 @@
 library(whitebox)
 library(terra)
+library(sf)
+library(tidyverse)
 wbt_init()
 
 p <- '/media/sagesteppe/ExternalHD/AIM_Field_rasters'
 demp <- file.path(p, 'UFO_dem_10_smooth_UTM.tif')
 hillshade_p <- file.path(p, 'UFO_Hillshade.tif')
 
-wbt_hillshade(demp, hillshade_p,azimuth = 315, altitude = 30, zfactor = 1)
+# topographic map for the UFO
+pcarto <- '/media/sagesteppe/ExternalHD/UFO_cartography'
+coarseDEM <- rast(file.path(pcarto,
+                       'EarthEnv-DEM90_N35W110/EarthEnv-DEM90_N35W110.bil' ))
 
-demp <- rast(demp)
-hillshade_p <- rast(hillshade_p)
+template <- rast(demp)
 
-ex <- ob@ptr[["vector"]]
+coarseDEM <- aggregate(coarseDEM, 5, method="bilinear")
+coarseDEM <- project(coarseDEM, crs(template))
+coarseDEM <- crop(coarseDEM, template)
+plot(coarseDEM)
 
-s <- rast(
-  nrows = round(dim(hillshade_p)[1]/10,0), 
-  ncols = round(dim(hillshade_p)[2]/10,0),
-  ext = ext(hillshade_p), 
-  crs = crs(demp)
-  )
+slope <- terrain(coarseDEM, "slope", unit="radians")
+aspect <- terrain(coarseDEM, "aspect", unit="radians")
+hill <- shade(slope, aspect, 30, 315)
+plot(hill, col=grey(0:100/100), legend=FALSE, mar=c(2,2,1,4))
+plot(coarseDEM, col=rainbow(25, alpha=0.35), add=TRUE)
 
-x <- resample(hillshade_p, s, method="cubicspline")
+altitude <- as.data.frame(coarseDEM, xy = T)
+hillshade <- as.data.frame(hill, xy = T)
+names(altitude) <- c('x','y','elevation')
+altitude$cut <- cut(altitude$elevation, breaks = 25)
 
-p2carto <- '/media/sagesteppe/ExternalHD/UFO_cartography'
-vector_data <- list.files(p2carto, recursive = T, pattern = 'shp$')
-acec <- st_read(
-  file.path(p2carto, vector_data[grep('*ACEC*', vector_data)]), quiet = T) %>% 
-  vect()
+places <- tigris::places(state = 'CO') %>% 
+  vect() %>% 
+  project(., crs(coarseDEM)) %>% 
+  crop(., ext(coarseDEM)) %>% 
+  st_as_sf() %>% 
+  st_point_on_surface() %>% 
+  select(NAME) %>% 
+  filter(NAME %in% c('Grand Junction', 'Montrose',
+                     'Telluride', 'Nucla', 'Paonia'))
 
-x <- project(x, crs(acec))
-
-
-test_df <- as.data.frame(x, xy = T)
-colnames(test_df) <- c("value", "x", "y")
-
-ggplot() +  
-  geom_tile(data=test_df, aes(x=x, y=y, fill=value), alpha=0.8) + 
-  scale_fill_gradient(low = "black", high = "white") 
+ggplot(hillshade, aes(x = x, y = y)) +
+  geom_tile(aes(colour = lyr1), lwd = 0) +
+  geom_raster(data = altitude, aes(fill = cut),
+              alpha = 0.8, interpolate = T) +
+  geom_contour(data = altitude, aes(z = elevation), 
+               colour ='black', alpha = 0.5, lty = 1) +
+  scale_fill_manual(values = rainbow(25)) +
+  scale_colour_gradient(low = "grey25", high = "white") +
+  theme_void() +
+  theme(legend.position = "none",
+        aspect.ratio=1,
+        plot.title = element_text(hjust = 0.5)) +
+  labs(title = 'Area of Drought Analysis') +
+  geom_sf_label(data = places, aes(label = NAME), inherit.aes = F,
+                alpha = 0.75, label.size  = NA)
