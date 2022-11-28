@@ -41,7 +41,7 @@ Thanks to M. Bach & M. Marsich
 
 ## Basemaps
 
-![Hillshade](results/maps/hillshade_drought.png)
+![Hillshade](results/maps/hillshade_drought)
 
 
-![Topo](results/maps/elevation_contour_drought.png)
+![Topo](results/maps/elevation_contour_drought)
