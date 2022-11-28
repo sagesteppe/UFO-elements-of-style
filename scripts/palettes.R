@@ -22,7 +22,10 @@ public_lands_pal <- setNames(
     'BLM', 'USFS', 'NPS', 'FWS', 'USBR', 'TRIB', 'DOD', 'OTHF', 'SLB', 'PVT', 'CITY_CNTY_SDC_SDNR_SPR')
 )
 
-# scales::show_col(public_lands_pal) 
+png(filename = 'results/plots/public_lands.png')
+par(bg=NA)
+scales::show_col(public_lands_pal, cex = 0.7) 
+dev.off()
 
 strata_pal <- setNames(
   
@@ -36,7 +39,12 @@ strata_pal <- setNames(
   
 )
 
-# scales::show_col(strata_pal) 
+
+png(filename = 'results/plots/strata.png')
+par(bg=NA)
+scales::show_col(strata_pal, cex_label = 0.7, ncol = 5) 
+dev.off()
+names(strata_pal)
 
 
 lifeform_pal <- setNames(
@@ -50,5 +58,7 @@ lifeform_pal <- setNames(
   
 )
 
-
-# scales::show_col(lifeform_pal) 
+png(filename = 'results/plots/lifeforms.png')
+par(bg=NA)
+scales::show_col(lifeform_pal, cex = 0.7) 
+dev.off()

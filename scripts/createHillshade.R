@@ -7,12 +7,14 @@ p <- '/media/sagesteppe/ExternalHD/AIM_Field_rasters'
 demp <- file.path(p, 'UFO_dem_10_smooth_UTM.tif')
 hillshade_p <- file.path(p, 'UFO_Hillshade.tif')
 
+rm(p)
 # topographic map for the UFO
 pcarto <- '/media/sagesteppe/ExternalHD/UFO_cartography'
 coarseDEM <- rast(file.path(pcarto,
                        'EarthEnv-DEM90_N35W110/EarthEnv-DEM90_N35W110.bil' ))
 
 template <- rast(demp)
+rm(pcarto)
 
 coarseDEM <- aggregate(coarseDEM, 5, method="bilinear")
 coarseDEM <- project(coarseDEM, crs(template))
@@ -30,9 +32,7 @@ hillshade <- as.data.frame(hill, xy = T)
 names(altitude) <- c('x','y','elevation')
 altitude$cut <- cut(altitude$elevation, breaks = 25)
 
-#midpoints <- altitude %>% group_by(cut) %>% 
-#  mutate(midpoint = median(elevation)) %>% 
-#  distinct(midpoint) %>% arrange(cut)
+rm(aspect, hill)
 
 places <- tigris::places(state = 'CO') %>% 
   vect() %>% 
@@ -44,16 +44,18 @@ places <- tigris::places(state = 'CO') %>%
   filter(NAME %in% c('Grand Junction', 'Montrose',
                      'Telluride', 'Nucla', 'Paonia'))
 
+rm(coarseDEM)
 
-#hillshade <- 
+hillshade_m <- 
 ggplot(data = hillshade, aes(x = x, y = y, fill = lyr1)) +
   geom_raster(interpolate = T)  +
   scale_fill_gradient(low = "grey15", high = "grey100") +
   guides(fill = 'none') +
   theme_void() +
-  theme(aspect.ratio=1, plot.title = element_text(hjust = 0.5)) 
+  theme(aspect.ratio=1, plot.title = element_text(hjust = 0.5)) +
+  new_scale_fill()
 
-#elevation_countour <- 
+elevation_countour <- 
 ggplot(hillshade, aes(x = x, y = y)) +
   geom_raster(data = hillshade, aes(x = x, y = y, fill = lyr1), interpolate = T)  +
   scale_fill_gradient(low = "grey15", high = "grey100") + 
@@ -72,3 +74,15 @@ ggplot(hillshade, aes(x = x, y = y)) +
   labs(title = 'Area of Drought Analysis') 
 
 
+p1 <- '/media/sagesteppe/ExternalHD/UFO_elements_of_style/results/maps'
+ggsave(plot = hillshade_m, device = "png", filename = 'hillshade_drought',
+       path = p1, 
+       width = 3.5, height = 3.5, units = 'in',  dpi = 300)
+
+ggsave(plot = elevation_countour, device = "png", filename = 'elevation_countour_drought',
+       path = p1, 
+       width = 3.5, height = 3.5, units = 'in',  dpi = 300)
+
+
+rm(demp, hillshade_p, p1, hillshade_m, places, slope, template, 
+   altitude, elevation_countour, hillshade)
