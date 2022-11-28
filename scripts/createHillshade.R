@@ -1,8 +1,7 @@
-library(whitebox)
 library(terra)
 library(sf)
 library(tidyverse)
-wbt_init()
+library(ggnewscale)
 
 p <- '/media/sagesteppe/ExternalHD/AIM_Field_rasters'
 demp <- file.path(p, 'UFO_dem_10_smooth_UTM.tif')
@@ -31,6 +30,10 @@ hillshade <- as.data.frame(hill, xy = T)
 names(altitude) <- c('x','y','elevation')
 altitude$cut <- cut(altitude$elevation, breaks = 25)
 
+#midpoints <- altitude %>% group_by(cut) %>% 
+#  mutate(midpoint = median(elevation)) %>% 
+#  distinct(midpoint) %>% arrange(cut)
+
 places <- tigris::places(state = 'CO') %>% 
   vect() %>% 
   project(., crs(coarseDEM)) %>% 
@@ -41,18 +44,28 @@ places <- tigris::places(state = 'CO') %>%
   filter(NAME %in% c('Grand Junction', 'Montrose',
                      'Telluride', 'Nucla', 'Paonia'))
 
-ggplot(hillshade, aes(x = x, y = y)) +
-  geom_tile(aes(colour = lyr1), lwd = 0) +
-  geom_raster(data = altitude, aes(fill = cut),
-              alpha = 0.8, interpolate = T) +
-  geom_contour(data = altitude, aes(z = elevation), 
-               colour ='black', alpha = 0.5, lty = 1) +
-  scale_fill_manual(values = rainbow(25)) +
-  scale_colour_gradient(low = "grey25", high = "white") +
+
+hillshade_baseplot <- ggplot() +
+  geom_raster(data = hillshade, aes(x = x, y = y, fill = lyr1), interpolate = T)  +
+  scale_fill_gradient(low = "grey15", high = "grey99") +
+  guides(fill = 'none') +
   theme_void() +
-  theme(legend.position = "none",
+  theme(aspect.ratio=1, plot.title = element_text(hjust = 0.5)) 
+
+
+ggplot(hillshade, aes(x = x, y = y)) +
+  geom_raster(data = hillshade, aes(x = x, y = y, fill = lyr1), interpolate = T)  +
+  scale_fill_gradient(low = "grey50", high = "grey100") + 
+  new_scale_fill() +
+  geom_tile(data = altitude, aes( fill = elevation),
+            alpha = 0.7, colour = NA) +
+  scale_fill_gradientn(colors = rainbow(n = 25)) +
+  geom_contour(data = altitude, aes(z = elevation), 
+               colour ='black', alpha = 0.65, lty = 1) +
+  theme_void() +
+  theme(legend.position = 'none',
         aspect.ratio=1,
         plot.title = element_text(hjust = 0.5)) +
   labs(title = 'Area of Drought Analysis') +
   geom_sf_label(data = places, aes(label = NAME), inherit.aes = F,
-                alpha = 0.75, label.size  = NA)
+                alpha = 0.75, label.size  = NA) 
