@@ -4,8 +4,8 @@
 #' it inherits it's aestheics from a custom theme developed for this purpose
 #' @param data - a data frame containing all variables for the plot
 #' @param response - a single column of the variable to map
-#' @param group - relevant grouping variable - expects character categorical
 #' @param col_pal - color palette e.g. 'strata_pal', or 'lifeform_pal'
+#' @param group - relevant grouping variables - expects character categorical
 #' @return a ggplot with the option to refine contents. 
 #' @example strata_pal_test <- c("setosa" = "#4A5A28", 
 #' "versicolor" = "#ADB1B9", "virginica" = "#CEB88E")
@@ -14,23 +14,23 @@
 #' plot(iris_box) + labs(title = 'Comparision of Sepal Length in Iris Species') 
 #' @export 
 #' @seealso theme_boxplot
-boxplot_drawer <- function(df, response, group, col_pal){
- term <- as.formula(paste(enexpr(response), ' ~ ', enexpr(group)))
+boxplot_drawer <- function(df, response, col_pal, group){
   
-  response <- enquo(response)
-  group <- enquo(group)
+  term <- as.formula(paste(rlang::expr(response), " ~ ", rlang::expr(group)))
+  response <- rlang::enquo(response)
+  group <- rlang::enquo(group)
   
-  my_means <- compare_means(term,  data = df)
-  my_comparisons <- my_means %>% 
-    nest(groups = c(group1, group2)) %>% 
-    pull(groups) %>% 
-    map(., as.character)
+  my_means <- ggpubr::compare_means(term,  data = df)
+  my_comparisons <- my_means |> 
+    purrr::nest(groups = c(group1, group2)) |>  
+    dplyr::pull(groups) |> 
+    purrr::map(., as.character)
   
-  min_v <- summarise(df, mean_mpg = floor(min(!!response))) %>% pull()
+  min_v <- summarise(df, mean_mpg = floor(min(!!response))) |> pull()
   
-  sample_sizes <- df %>% 
-    group_by(!!group) %>% 
-    tally() %>% 
+  sample_sizes <- df |> 
+    group_by(!!group) |>  
+    tally() |> 
     mutate(n = paste0('n = ', n))
   
   ufo_boxplot <- ggplot(df, aes(x = !!group, y = !!response, colour = !!group),  
@@ -56,6 +56,10 @@ boxplot_drawer <- function(df, response, group, col_pal){
   return(ufo_boxplot)
 }
 
+strata_pal_test <- c("setosa" = "#4A5A28", "versicolor" = "#ADB1B9", "virginica" = "#CEB88E")
+iris_box <- boxplot_drawer(df = iris, response = Sepal.Length, 
+                           group = Species, col_pal = strata_pal_test)
+plot(iris_box) + labs(title = 'Comparision of Sepal Length in Iris Species') 
 
 #' Draws a stacked barchart to convey number of observations, a binomial response, 
 #' and confidence estimates of the response. 
@@ -160,6 +164,16 @@ stacked_prop_drawer <- function(data, response_val, response_cat, grp1, grp2,
   return(myplot)
 
 }
+
+is <- InsectSprays %>% 
+   mutate(
+    ID = 1:n(), .before = count) %>% 
+    mutate(
+      year = rep(2021:2022, times = 6, each = 6),
+      dead = floor(runif(n(), min=0, max=count)),
+      live = count - dead) %>% 
+    pivot_longer(cols = dead:live, values_to = 'tot_count', names_to = 'response')
+
 
 
 #' Draws a dodged set of bar charts to show proportional data

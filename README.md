@@ -41,7 +41,9 @@ Thanks to M. Bach & M. Marsich
 
 ## Basemaps
 
+### Example Hillshade 
 ![Hillshade](results/maps/hillshade_drought)
 
-
+### Example topographic on hillshade
 ![Topo](results/maps/elevation_contour_drought)
+
