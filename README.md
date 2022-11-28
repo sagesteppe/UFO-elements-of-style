@@ -5,7 +5,9 @@ Design elements for a consistent 5 year AIM report. We define palettes, ggplot t
 
 
 ## Color Palettes:
+
 <p align="center">
+
 ### Public Land Ownership
 ![Public Land Ownership](./results/plots/public_lands.png)
 
