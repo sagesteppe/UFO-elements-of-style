@@ -46,8 +46,18 @@ Thanks to M. Bach & M. Marsich
 ![Stacked Prop](results/plots/stacked_prop_drawer.png)
 
 
+This plot utilizes the base theme 'theme_prop_bar'. It is used to display three components:
+- A binomial response (e.g. Yes/No)  
+- The total number of samples (useful for unequal sample sizes)  
+- confidence estimates associated with the proportion of the binomial responses  
+
 ### Dodged Drawer
 ![Dodged Drawer](results/plots/dodged_drawer.png)
+
+This plot is very similar to the stacked prop drawer. It is used to display three components:
+- A response with => categorical outcomes
+- A breakdown of the percent responses for each outcomes (useful for equal sample sizes)
+- confidence estimates associated with the percentages of outcomes
 
 
 ## Basemaps
