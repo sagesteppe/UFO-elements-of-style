@@ -6,6 +6,7 @@ Design elements for a consistent 5 year AIM report. We define palettes, ggplot t
 
 ## Color Palettes:
 
+### Public Land Ownership
 ![Public Land Ownership](./results/plots/public_lands.png)
 
 top L to bottom R:  
@@ -18,16 +19,16 @@ H-1553-Publications Standards Manual Handbook
 
 
 
-
+### Stratum
 ![Stratum Colors](results/plots/strata.png)
 
 top L to bottom R:  
 'PJ', 'SS', 'SD', 'MMS', 'AS',  
 'RI', 'OT', 'GR', 'PP', 'MC'  
 
-Thanks to M. Bach, and M. Marsich
+Thanks to M. Bach & M. Marsich
 
-
+### Lifeform
 ![Lifeform Colors](results/plots/lifeforms.png)
 
 top L to bottom R:  
@@ -35,4 +36,4 @@ top L to bottom R:
 'Perennial Forb', 'Tree', 'Shrub',  
 'Succulent'  
 
-Thanks to M. Bach, and M. Marsich
+Thanks to M. Bach & M. Marsich
