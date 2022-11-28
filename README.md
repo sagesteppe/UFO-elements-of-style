@@ -39,6 +39,17 @@ top L to bottom R:
 Thanks to M. Bach & M. Marsich
 
 
+
+## Plots and Themes
+
+### Stacked Prop Drawer
+![Stacked Prop](results/plots/stacked_prop_drawer.png)
+
+
+### Dodged Drawer
+![Dodged Drawer](results/plots/dodged_drawer.png)
+
+
 ## Basemaps
 
 ### Example Hillshade 
