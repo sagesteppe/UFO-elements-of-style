@@ -79,7 +79,7 @@ ggsave(plot = hillshade_m, device = "png", filename = 'hillshade_drought',
        path = p1, 
        width = 3.5, height = 3.5, units = 'in',  dpi = 300)
 
-ggsave(plot = elevation_countour, device = "png", filename = 'elevation_countour_drought',
+ggsave(plot = elevation_countour, device = "png", filename = 'elevation_contour_drought',
        path = p1, 
        width = 3.5, height = 3.5, units = 'in',  dpi = 300)
 

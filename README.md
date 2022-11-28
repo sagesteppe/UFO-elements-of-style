@@ -4,9 +4,7 @@ Design elements for a consistent 5 year AIM report. We define palettes, ggplot t
 
 
 
-## Color Palettes:
-
-<p align="center">
+## Color Palettes
 
 ### Public Land Ownership
 ![Public Land Ownership](./results/plots/public_lands.png)
@@ -39,4 +37,11 @@ top L to bottom R:
 'Succulent'  
 
 Thanks to M. Bach & M. Marsich
-</p>
+
+
+## Basemaps
+
+![Hillshade](results/maps/hillshade_drought.png)
+
+
+![Topo](results/maps/elevation_contour_drought.png)
