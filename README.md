@@ -70,4 +70,4 @@ This hillshade serves as a basemap for multiple cartographic products. It may be
 ### Example topographic on hillshade
 ![Topo](results/maps/elevation_contour_drought)
 
-This is an exapmle of putting topographic information on top of a hillshade.
+This is an example of putting topographic information on top of a hillshade. Notice how the information from the above hillshade is contextualized by the long light blue spur in the center of the map.
