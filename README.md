@@ -65,6 +65,9 @@ This plot is very similar to the stacked prop drawer. It is used to display thre
 ### Example Hillshade 
 ![Hillshade](results/maps/hillshade_drought)
 
+This hillshade serves as a basemap for multiple cartographic products. It may be drawn upon by utilizing the transperancy (alpha) parameter of objects drawn on top of it. 
+
 ### Example topographic on hillshade
 ![Topo](results/maps/elevation_contour_drought)
 
+This is an exapmle of putting topographic information on top of a hillshade.
