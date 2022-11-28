@@ -45,20 +45,21 @@ places <- tigris::places(state = 'CO') %>%
                      'Telluride', 'Nucla', 'Paonia'))
 
 
-hillshade_baseplot <- ggplot() +
-  geom_raster(data = hillshade, aes(x = x, y = y, fill = lyr1), interpolate = T)  +
-  scale_fill_gradient(low = "grey15", high = "grey99") +
+#hillshade <- 
+ggplot(data = hillshade, aes(x = x, y = y, fill = lyr1)) +
+  geom_raster(interpolate = T)  +
+  scale_fill_gradient(low = "grey15", high = "grey100") +
   guides(fill = 'none') +
   theme_void() +
   theme(aspect.ratio=1, plot.title = element_text(hjust = 0.5)) 
 
-
+#elevation_countour <- 
 ggplot(hillshade, aes(x = x, y = y)) +
   geom_raster(data = hillshade, aes(x = x, y = y, fill = lyr1), interpolate = T)  +
-  scale_fill_gradient(low = "grey50", high = "grey100") + 
+  scale_fill_gradient(low = "grey15", high = "grey100") + 
   new_scale_fill() +
-  geom_tile(data = altitude, aes( fill = elevation),
-            alpha = 0.7, colour = NA) +
+  geom_tile(data = altitude, aes(fill = elevation),
+            alpha = 0.65, colour = NA) +
   scale_fill_gradientn(colors = rainbow(n = 25)) +
   geom_contour(data = altitude, aes(z = elevation), 
                colour ='black', alpha = 0.65, lty = 1) +
@@ -66,6 +67,8 @@ ggplot(hillshade, aes(x = x, y = y)) +
   theme(legend.position = 'none',
         aspect.ratio=1,
         plot.title = element_text(hjust = 0.5)) +
-  labs(title = 'Area of Drought Analysis') +
   geom_sf_label(data = places, aes(label = NAME), inherit.aes = F,
-                alpha = 0.75, label.size  = NA) 
+                alpha = 0.75, label.size  = NA) +
+  labs(title = 'Area of Drought Analysis') 
+
+
