@@ -7,7 +7,8 @@ library(tidyverse)
 # Import template
 p2carto <- '/media/sagesteppe/ExternalHD/UFO_cartography'
 vector_data <- list.files(p2carto, recursive = T, pattern = 'shp$')
-
+gdb_data <- gsub('/gdb', "", list.files(p2carto, recursive = T, pattern = 'gdb$'))
+                 
 aim <- st_read(
   file.path(p2carto, vector_data[grep('*Plots*', vector_data)]), quiet = T)
 
@@ -35,9 +36,6 @@ nm_and_nca <- st_read(
 padus <- st_read(
   file.path(p2carto, vector_data[grep('PAD.*Fee*', vector_data)]), quiet = T)
 
-streams <- st_read(
-  file.path(p2carto, vector_data[grep('*Streams*', vector_data)]), quiet = T)
-
 tabeguache <- st_read(
   file.path(p2carto, vector_data[grep('*Tabeguache*', vector_data)]), quiet = T)
 
@@ -46,6 +44,7 @@ wa <- st_read(
 
 wsa <- st_read(
   file.path(p2carto, vector_data[grep('*WSA*', vector_data)]), quiet = T)
+
 
 # subset datasets for FO
 
@@ -152,6 +151,30 @@ st_intersection(st_transform(unc_bbox, st_crs(wa)), wa) %>%
 
 rm(unc_bbox, padus, nm_and_nca, grouse, administrative_boundaries, acec, wa, aim,
    mlra)
+
+
+# geodatabases here 
+
+st_layers(file.path(p2carto, gdb_data[grep('*NHD*', gdb_data)])[1])
+
+nhd_l1 <- st_read(file.path(
+  p2carto, gdb_data[grep('*NHD*', gdb_data)])[1], layer = 'NHDFlowline',
+  quiet = T) %>% 
+  st_zm(drop = TRUE) %>% 
+  dplyr::select(FType, FCode, ReachCode) %>% 
+  filter(FType == 460) %>% 
+  st_simplify(preserveTopology = T, dTolerance = 100)
+
+starT <- Sys.time()
+nhd_l1 <- st_intersection(
+  st_transform(unc_bbox, st_crs(nhd_l1), nhd_l1),
+                nhd_l1)
+Sys.time() - starT
+
+ggplot(nhd_l1) +
+  geom_sf()
+
+unique(nhd_l1$FType)
 
 # these are clipped to the extent of the field office. 
 UFO_ADMU <- filter(administrative_boundaries, FIELD_O == 'UNCOMPAHGRE')

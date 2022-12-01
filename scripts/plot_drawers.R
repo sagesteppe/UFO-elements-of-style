@@ -146,7 +146,6 @@ stacked_prop_drawer <- function(data, response_val, response_cat, grp1, grp2,
 #  data <- data %>% 
 #    dplyr::mutate(dplyr::across(.cols = c(!!response_cat,
 #                                          !!grp1, !!grp2), ~ str_to_sentence(.x)))
-  # CAPITALIE THE VAR NAMES - PULL AND PLOT DIRECTLY REED !
   
   myplot <- ggplot(data, aes(y = !!response_val, x = !!grp1, fill = !!response_cat)) +
     geom_bar(position="stack", stat="identity") +

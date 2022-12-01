@@ -45,6 +45,16 @@ wsa <- st_read(
 extent <- filter(administrative_boundaries, FIELD_O == 'UNCOMPAHGRE') %>%
   st_bbox()
 
+# raster data
+
+raster_data <- list.files(p2carto, recursive = T, pattern = 'tif$')
+hill <- rast(
+  file.path(p2carto, raster_data[grep('hill', raster_data)])
+)
+hillshade <- as.data.frame(hill, xy = T)
+
+rm(hill)
+
 
 public_lands_pal <- setNames(
 

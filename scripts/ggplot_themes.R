@@ -25,7 +25,7 @@ theme_boxplot <- function(){
         #text elements
         plot.title = element_text(             #title
           family = font,            #set font family
-          size = 16,                #set font size
+          size = 14,                #set font size
           face = 'bold',            #bold typeface
           hjust = 0.5,                #left align     
           vjust = 2
@@ -77,7 +77,7 @@ theme_prop_bar <- function(){
       #text elements
       plot.title = element_text(  #title
         family = font,            #set font family
-        size = 16,                #set font size
+        size = 14,                #set font size
         face = 'bold',            #bold typeface
         hjust = 0.5,              #center    
         vjust = 2),               #move title up

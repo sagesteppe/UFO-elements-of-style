@@ -32,6 +32,10 @@ hillshade <- as.data.frame(hill, xy = T)
 names(altitude) <- c('x','y','elevation')
 altitude$cut <- cut(altitude$elevation, breaks = 25)
 
+p2d <- '/media/sagesteppe/ExternalHD/UFO_cartography'
+ifelse(!dir.exists(file.path(p2d, 'Hillshade')), 
+       dir.create(file.path(p2d, 'Hillshade')), FALSE)
+writeRaster(hill, file.path(p2d, 'Hillshade', 'Hillshade.tif'))
 rm(aspect, hill)
 
 places <- tigris::places(state = 'CO') %>% 
@@ -79,7 +83,7 @@ ggsave(plot = hillshade_m, device = "png", filename = 'hillshade_drought',
        path = p1, 
        width = 3.5, height = 3.5, units = 'in',  dpi = 300)
 
-ggsave(plot = elevation_countour, device = "png", filename = 'elevation_contour_drought',
+ggsave(plot = elevation_countour, device = "png", filename = 'elevation_contour_drought.png',
        path = p1, 
        width = 3.5, height = 3.5, units = 'in',  dpi = 300)
 
