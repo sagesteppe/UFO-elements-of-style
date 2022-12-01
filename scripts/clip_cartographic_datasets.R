@@ -157,24 +157,74 @@ rm(unc_bbox, padus, nm_and_nca, grouse, administrative_boundaries, acec, wa, aim
 
 st_layers(file.path(p2carto, gdb_data[grep('*NHD*', gdb_data)])[1])
 
+startT <- Sys.time()
 nhd_l1 <- st_read(file.path(
   p2carto, gdb_data[grep('*NHD*', gdb_data)])[1], layer = 'NHDFlowline',
   quiet = T) %>% 
   st_zm(drop = TRUE) %>% 
   dplyr::select(FType, FCode, ReachCode) %>% 
   filter(FType == 460) %>% 
-  st_simplify(preserveTopology = T, dTolerance = 100)
+  st_simplify(preserveTopology = T, dTolerance = 25) %>% 
+  filter(!st_is_empty(.)) %>% 
+  st_intersection(
+  st_transform(unc_bbox, st_crs(.), .),
+                .)
+Sys.time() - startT
 
-starT <- Sys.time()
-nhd_l1 <- st_intersection(
-  st_transform(unc_bbox, st_crs(nhd_l1), nhd_l1),
-                nhd_l1)
-Sys.time() - starT
+startT <- Sys.time()
+nhd_l2 <- st_read(file.path(
+  p2carto, gdb_data[grep('*NHD*', gdb_data)])[2], layer = 'NHDFlowline',
+  quiet = T) %>% 
+  st_zm(drop = TRUE) %>% 
+  dplyr::select(FType, FCode, ReachCode) %>% 
+  filter(FType == 460) %>% 
+  st_simplify(preserveTopology = T, dTolerance = 25) %>% 
+  filter(!st_is_empty(.)) %>% 
+  st_intersection(
+    st_transform(unc_bbox, st_crs(.), .),
+    .)
+Sys.time() - startT
 
-ggplot(nhd_l1) +
+startT <- Sys.time()
+nhd_l3 <- st_read(file.path(
+  p2carto, gdb_data[grep('*NHD*', gdb_data)])[3], layer = 'NHDFlowline',
+  quiet = T) %>% 
+  st_zm(drop = TRUE) %>%  # we remove z dimension info
+  dplyr::select(FType, FCode, ReachCode) %>% # remove columns with floats
+  filter(FType == 460) %>% # streams/rivers
+  st_simplify(preserveTopology = T, dTolerance = 25) %>% # simplify wiggles 
+  filter(!st_is_empty(.)) %>% # remove empty collections
+  st_intersection( # intersect to the target, keep in it's native crs.
+    st_transform(unc_bbox, st_crs(.), .),
+    .)
+Sys.time() - startT
+
+nhd <- bind_rows(nhd_l1, nhd_l2, nhd_l3) %>% 
+  rename(geometry = x) %>% 
+  group_by(ReachCode)  %>% # some reaches spanned the tiles, combine. 
+  summarize(geometry = st_union(geometry)) # takes some time. 
+
+nhd <- st_transform(nhd, 26913)
+
+ggplot(nhd) +
   geom_sf()
 
-unique(nhd_l1$FType)
+rm(nhd_l1, nhd_l2, nhd_l3)
+
+
+ifelse(!dir.exists(file.path(p2carto, 'NHD', 'NHDprocessed')), 
+       dir.create(file.path(p2carto, 'NHD', 'NHDprocessed')), FALSE)
+st_write(nhd, file.path(p2carto, 'NHD', 'NHDprocessed', 'NHD_UFO.shp'))
+
+#file.remove( # delete the raw data here. 
+#  file.path(p2carto, 'NHD',
+#  list.files(file.path(p2carto, 'NHD'), pattern = 'PLUS'))
+#)
+#unlink(
+#  file.path(p2carto, 'NHD',
+#            list.files(file.path(p2carto, 'NHD'), pattern = 'PLUS')),
+#  recursive = T
+#)
 
 # these are clipped to the extent of the field office. 
 UFO_ADMU <- filter(administrative_boundaries, FIELD_O == 'UNCOMPAHGRE')
