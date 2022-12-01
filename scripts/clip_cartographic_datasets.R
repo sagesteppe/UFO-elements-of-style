@@ -155,11 +155,11 @@ rm(unc_bbox, padus, nm_and_nca, grouse, administrative_boundaries, acec, wa, aim
 
 # geodatabases here 
 
-st_layers(file.path(p2carto, gdb_data[grep('*NHD*', gdb_data)])[1])
+st_layers(file.path(p2carto, gdb_data[grep('*NHD_Streams*', gdb_data)])[1])
 
 startT <- Sys.time()
 nhd_l1 <- st_read(file.path(
-  p2carto, gdb_data[grep('*NHD*', gdb_data)])[1], layer = 'NHDFlowline',
+  p2carto, gdb_data[grep('*NHD_Streams*', gdb_data)])[1], layer = 'NHDFlowline',
   quiet = T) %>% 
   st_zm(drop = TRUE) %>% 
   dplyr::select(FType, FCode, ReachCode) %>% 
@@ -173,7 +173,7 @@ Sys.time() - startT
 
 startT <- Sys.time()
 nhd_l2 <- st_read(file.path(
-  p2carto, gdb_data[grep('*NHD*', gdb_data)])[2], layer = 'NHDFlowline',
+  p2carto, gdb_data[grep('*NHD_Streams*', gdb_data)])[2], layer = 'NHDFlowline',
   quiet = T) %>% 
   st_zm(drop = TRUE) %>% 
   dplyr::select(FType, FCode, ReachCode) %>% 
@@ -187,7 +187,7 @@ Sys.time() - startT
 
 startT <- Sys.time()
 nhd_l3 <- st_read(file.path(
-  p2carto, gdb_data[grep('*NHD*', gdb_data)])[3], layer = 'NHDFlowline',
+  p2carto, gdb_data[grep('*NHD_Streams*', gdb_data)])[3], layer = 'NHDFlowline',
   quiet = T) %>% 
   st_zm(drop = TRUE) %>%  # we remove z dimension info
   dplyr::select(FType, FCode, ReachCode) %>% # remove columns with floats
@@ -211,17 +211,17 @@ ggplot(nhd) +
 
 rm(nhd_l1, nhd_l2, nhd_l3)
 
-ifelse(!dir.exists(file.path(p2carto, 'NHD', 'NHDprocessed')), 
-       dir.create(file.path(p2carto, 'NHD', 'NHDprocessed')), FALSE)
-st_write(nhd, file.path(p2carto, 'NHD', 'NHDprocessed', 'NHD_UFO.shp'))
+ifelse(!dir.exists(file.path(p2carto, 'NHD_Streams', 'NHDprocessed')), 
+       dir.create(file.path(p2carto, 'NHD_Streams', 'NHDprocessed')), FALSE)
+st_write(nhd, file.path(p2carto, 'NHD_Streams', 'NHDprocessed', 'NHD_UFO.shp'))
 
 #file.remove( # delete the raw data here. 
-#  file.path(p2carto, 'NHD',
-#  list.files(file.path(p2carto, 'NHD'), pattern = 'PLUS'))
+#  file.path(p2carto, 'NHD_streams',
+#  list.files(file.path(p2carto, 'NHD_Streams'), pattern = 'PLUS'))
 #)
 #unlink(
-#  file.path(p2carto, 'NHD',
-#            list.files(file.path(p2carto, 'NHD'), pattern = 'PLUS')),
+#  file.path(p2carto, 'NHD_Streams',
+#            list.files(file.path(p2carto, 'NHD_Streams'), pattern = 'PLUS')),
 #  recursive = T
 #)
 

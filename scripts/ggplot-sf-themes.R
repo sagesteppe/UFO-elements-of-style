@@ -32,7 +32,11 @@ nm_and_nca <- st_read(
   file.path(p2carto, vector_data[grep('*NCA*', vector_data)]), quiet = T)
 
 streams <- st_read(
-  file.path(p2carto, vector_data[grep('*NHD*', vector_data)]), quiet = T)
+  file.path(p2carto, vector_data[grep('*NHD_Streams*', vector_data)]), quiet = T)
+
+rivers <- st_read(
+  file.path(p2carto, vector_data[grep('*NHD_Rivers*', vector_data)]), quiet = T) %>% 
+  st_zm()
 
 tabeguache <- st_read(
   file.path(p2carto, vector_data[grep('*Tabeguache*', vector_data)]), quiet = T)
@@ -96,60 +100,70 @@ acec_grid <- st_make_grid(ACEC, square = F , flat_topped =  T, n = c(5, 5))
 acec_grid <- st_intersection(ACEC, acec_grid)
 
 AIM <- aim %>% mutate(Dumm = 'A') %>% st_crop(., bbox)
-acec_streams <- st_intersection(ACEC, streams)
+acec_streams <- st_crop(streams, bbox)
+acec_rivers <- st_crop(rivers, bbox)
+
+ggplot(ACEC) +
+  geom_sf()
+
 hill <- crop(hill, ext(terra::vect(extent)))
 hillshade <- as.data.frame(hill, xy = T)
 
-ggplot(data = hillshade, aes(x = x, y = y, fill = lyr1)) +
-  geom_raster(interpolate = T)  +
-  scale_fill_gradient(low = "grey1", high = "grey100") +
+plp1 <- '#FECC5C'
+names(plp1) <- 'Wilderness'
+plp1 <- c(plp, plp1)
+
+ggNCA <- ggplot() +
+  geom_raster(data = hillshade, aes(x = x, y = y, fill = lyr1), 
+              interpolate = F)  +
+  scale_fill_gradient(low = "grey50", high = "grey100") +
   guides(fill = 'none') +
   theme_void() +
   theme(aspect.ratio=1, plot.title = element_text(hjust = 0.5)) +
   ggnewscale::new_scale_fill() +
 
-  geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.7, inherit.aes = F) +
-  geom_sf(data = wa, fill = rgb(254, 204, 92, max = 255),
-          color = NA,  inherit.aes = F, alpha = 0.8) +
-  geom_sf(data = acec_grid, fill = NA, aes(color = 'grey25'), 
-          alpha = 0.7,  inherit.aes = F) +
+  geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.5) +
+  geom_sf(data = wa, fill = '#FECC5C', color = NA, alpha = 0.4) +
+  geom_sf(data = acec_grid, fill = NA, aes(color = 'maroon4'), alpha = 0.5) +
   geom_sf(data = gg, aes(color = 'darkgreen'), lwd = 1.0, 
-          fill = NA, alpha = 0.7,  inherit.aes = F) +
-  geom_sf(data = AIM, aes(shape = Dumm), size = 2,  inherit.aes = F) +
-  geom_sf(data = streams, inherit.aes = F, alpha = 0.3, color = 'blue') +
+          fill = NA, alpha = 0.5) +
+  geom_sf(data = AIM, aes(shape = Dumm), size = 3) +
+  geom_sf(data = acec_rivers, alpha = 0.5, color = 'blue') +
+  geom_sf(data = acec_streams, alpha = 0.2, color = 'blue', lty = 'twodash') +
   
   coord_sf(xlim = c(bbox['xmin'], bbox['xmax']), 
            ylim = c(bbox['ymin'], bbox['ymax'])) +
   
-  scale_fill_manual(values = plp, limits = c("BLM", "NPS", "FWS")) +
-  
   theme_void() +
   theme(legend.title.align=0.5,
-        title=element_text(hjust =0.5)) +
+        title=element_text(hjust = 0.5)) +
   
   labs(fill = 'Management', 
-       title = 'AIM Plots Sampled in the Vicinity of\nGunnison Gorge NCA') +
-  scale_color_identity(name = "Borders",
-                       breaks = c("darkgreen", "grey25"),
-                       labels = c("NCA", "ACEC"),
-                       guide = "legend") +
-  scale_shape_manual(name = "",
-                     labels = 'AIM',
-                     values =  15) +
-  annotation_scale(location = "bl", width_hint = 0.225) +
-  annotation_north_arrow(location = "bl", which_north = "true", 
-                         pad_x = unit(-0.1, "in"), 
-                         pad_y = unit(0.25, "in"),
-                         style = north_arrow_minimal) +
+       title = 'AIM Plots sampled near Gunnison Gorge NCA') +
+  scale_fill_manual(values = c(plp1),
+                    limits = c("BLM", "NPS", "FWS", "Wilderness")) +
+  scale_color_identity(name = NULL,  breaks = c("darkgreen", "maroon4"),
+                       labels = c("NCA", "ACEC"),  guide = "legend") +
+  scale_shape_manual(name = NULL, labels = 'AIM Plots',  values =  18) +
   guides(
-    colour = guide_legend(order = 2),
     fill = guide_legend(order = 1),
-    shape = guide_legend(order = 3)
-  )
+    colour = guide_legend(order = 2),
+    shape = guide_legend(order = 3)) +
+  
+  annotation_scale(location = "bl", 
+                   pad_x = unit(0.25, "in"), pad_y = unit(0.3, "in"),
+                   width_hint = 0.225) +
+  annotation_north_arrow(location = "bl", which_north = "true", 
+                         pad_x = unit(0.1, "in"), pad_y = unit(0.5, "in"),
+                         style = north_arrow_minimal) 
 
-rm(de)
+#setwd('/media/sagesteppe/ExternalHD/UFO_elements_of_style')
+#ggsave(ggNCA, path = 'results/maps', device = 'png',
+#       bg = 'transparent', filename = 'GunnisonGorgeAIMPlots',
+#       dpi = 300, width = 4, height = 6 , units = "in")
+
+
  # Create Basemaps and Templates for the Dominguez Escalente NCA
-
 
 ####################backed up !!!!!!!!!!
 
@@ -163,7 +177,7 @@ extent <- de %>%
   st_as_sf()
 
 Pad <- st_intersection(extent, padus) %>% 
-  mutate(Own_Name = if_else(Own_Name == 'CITY_CNTY_SDC_SDNR_SPR', 'State', Own_Name))
+  mutate(Own_Name = if_else(Own_Name == 'CITY_CNTY_SDC_SDNR_SPR', 'Local-State', Own_Name))
 bbox <- st_bbox(extent)
 
 public_lands_pal1 <- public_lands_pal
@@ -172,54 +186,68 @@ plp <- public_lands_pal[c(unique(Pad$Own_Name))]
 plp <- plp[order(names(plp))]
 names(plp)[2] <- 'Local-State'
 plp <- plp[1:3]
+plp1 <- '#FECC5C'
+names(plp1) <- 'Wilderness'
+plp1 <- c(plp, plp1)
 
 ACEC <- st_crop(acec, bbox)
 acec_grid <- st_make_grid(ACEC, square = F , flat_topped =  T, n = c(25, 25))
 acec_grid <- st_intersection(acec, acec_grid)
+acec_grid <- st_crop(acec_grid, bbox)
 ADMU <- st_crop(administrative_boundaries, bbox)
+hill <- crop(hill, ext(terra::vect(extent))) # Reload the native hill dataset
+hillshade <- as.data.frame(hill, xy = T)
+acec_streams <- st_crop(streams, bbox)
+acec_rivers <- st_crop(rivers, bbox)
 
 AIM <- aim %>% mutate(Dumm = 'A') %>% st_crop(., bbox)
 
 ggplot() +
-  geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.8) +
-  geom_sf(data = de, aes(color = 'darkgreen'), lwd = 1.5, 
-          fill = NA, alpha = 0.8) +
-  geom_sf(data = wa, fill = rgb(254, 204, 92, max = 255), color = NA) +
-  geom_sf(data = acec, fill = NA, aes(color = 'grey25'), alpha = 0.8) +
-  geom_sf(data = acec_grid, fill = NA)+
-  geom_sf(data = ADMU, fill = NA, aes(color = 'black')) +
-  geom_sf(data = AIM, aes(shape = Dumm)) +
+  geom_raster(data = hillshade, aes(x = x, y = y, fill = lyr1), 
+              interpolate = F)  +
+  scale_fill_gradient(low = "grey50", high = "grey100") +
+  guides(fill = 'none') +
+  theme_void() +
+  theme(aspect.ratio=1, plot.title = element_text(hjust = 0.5)) +
+  ggnewscale::new_scale_fill() +
+  
+  geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.5) +
+  geom_sf(data = wa, fill = '#FECC5C', color = NA, alpha = 0.4) +
+  geom_sf(data = acec_grid, fill = NA, aes(color = 'maroon4'), alpha = 0.5) +
+  geom_sf(data = de, aes(color = 'darkgreen'), lwd = 1.0, 
+          fill = NA, alpha = 0.5) +
+  geom_sf(data = ADMU, fill = NA, aes(color = 'black'), lwd = 1.0) +
+  geom_sf(data = acec_rivers, alpha = 0.5, color = 'blue') +
+  geom_sf(data = acec_streams, alpha = 0.1, color = 'blue', lty = 'twodash') +
+  geom_sf(data = AIM, aes(shape = Dumm), size = 3) +
   
   coord_sf(xlim = c(bbox['xmin'], bbox['xmax']), 
            ylim = c(bbox['ymin'], bbox['ymax'])) +
   
-  scale_fill_manual(values = plp) +
-  
   theme_void() +
-  theme(legend.title.align=0.5, 
-        title=element_text(hjust =0.5)) +
+  theme(legend.title.align = 0.5, 
+        title=element_text(hjust = 0.5)) +
   
-  scale_color_identity(name = "Borders",
-                       breaks = c("black", "darkgreen", "grey25"),
-                       labels = c("UFO / GJFO", "NCA", "ACEC"),
-                       guide = "legend") +
-  scale_shape_manual(name = "",
-                     labels = 'AIM Plots',
-                     values =  15) +
-  
-  labs(fill = 'Management', 
-       title = 'AIM Plots Sampled in the Vicinity of\nDominguez-Escalente NCA') +
-  
-  labs(fill = 'Management:') +
-  annotation_scale(location = "bl", width_hint = 0.225, 
-                   pad_x = unit(0.15, "in"), 
-                   pad_y = unit(0.2, "in"),) +
-  annotation_north_arrow(location = "bl", which_north = "true", 
-                         pad_x = unit(0.0, "in"), 
-                         pad_y = unit(0.3, "in"),
-                         style = north_arrow_minimal) +
+  labs(title = 'AIM Plots sampled near Dominguez-Escalente NCA') +
+  scale_fill_manual('Management', values = plp1) +
+  scale_color_identity(name = NULL,  breaks = c("darkgreen", "maroon4", "black"),
+                       labels = c("NCA", "ACEC", "UFO/GJFO"),  guide = "legend") +
+  scale_shape_manual(name = NULL, labels = 'AIM Plots', values =  18) +
   guides(
-    colour = guide_legend(order = 2),
     fill = guide_legend(order = 1),
-    shape = guide_legend(order = 3)
-  )
+    colour = guide_legend(order = 2),
+    shape = guide_legend(order = 3)) +
+  
+  annotation_scale(location = "bl", 
+                   pad_x = unit(0.25, "in"), pad_y = unit(0.3, "in"),
+                   width_hint = 0.225) +
+  annotation_north_arrow(location = "bl", which_north = "true", 
+                         pad_x = unit(0.1, "in"), pad_y = unit(0.5, "in"),
+                         style = north_arrow_minimal) 
+
+setwd('/media/sagesteppe/ExternalHD/UFO_elements_of_style')
+ggsave(deNCA, path = 'results/maps', device = 'png',
+       bg = 'transparent', filename = 'DominguezEscalenteAIMPlots',
+       dpi = 300, width = 4, height = 6 , units = "in")
+
+
