@@ -97,16 +97,11 @@ ggsave(plot = elevation_countour, device = "png", filename = 'elevation_contour_
 pcarto <- '/media/sagesteppe/ExternalHD/UFO_cartography'
 fineDEM <- rast(file.path(pcarto, 'DEM',
                           'UFO_dem_10_smooth_UTM.tif' ))
-template <- rast(demp)
-rm(pcarto)
-
-plot(fineDEM)
+fineDEM <- project(fineDEM, 'epsg:26913')
 
 slope <- terrain(fineDEM, "slope", unit="radians")
 aspect <- terrain(fineDEM, "aspect", unit="radians")
 hill <- shade(slope, aspect, 30, 315)
-plot(hill, col=grey(0:100/100), legend=FALSE, mar=c(2,2,1,4))
-plot(fineDEM, col=rainbow(25, alpha=0.35), add=TRUE)
 
 p2d <- '/media/sagesteppe/ExternalHD/UFO_cartography'
 ifelse(!dir.exists(file.path(p2d, 'Hillshade')), 

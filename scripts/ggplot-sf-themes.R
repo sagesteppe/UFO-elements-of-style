@@ -51,19 +51,8 @@ extent <- filter(administrative_boundaries, FIELD_O == 'UNCOMPAHGRE') %>%
 raster_data <- list.files(p2carto, recursive = T, pattern = 'tif$')
 
 hill <- rast(
-  file.path(p2carto, raster_data[grep('Hill', raster_data)])
+  file.path(p2carto, raster_data[grep('Hill.*fine', raster_data)])
 )
-hillshade <- as.data.frame(hill, xy = T)
-rm(hill)
-
-hillshade_m <- 
-  ggplot(data = hillshade, aes(x = x, y = y, fill = lyr1)) +
-  geom_raster(interpolate = T)  +
-  scale_fill_gradient(low = "grey15", high = "grey100") +
-  guides(fill = 'none') +
-  theme_void() +
-  theme(aspect.ratio=1, plot.title = element_text(hjust = 0.5)) +
-  ggnewscale::new_scale_fill() # this is a base to draw on top of. 
 
 public_lands_pal <- setNames(
 
@@ -108,14 +97,12 @@ acec_grid <- st_intersection(ACEC, acec_grid)
 
 AIM <- aim %>% mutate(Dumm = 'A') %>% st_crop(., bbox)
 acec_streams <- st_intersection(ACEC, streams)
-
-
-hillshade_m  # hopefully just drop this pup in in-place 
-# - need higher res product.
+hill <- crop(hill, ext(terra::vect(extent)))
+hillshade <- as.data.frame(hill, xy = T)
 
 ggplot(data = hillshade, aes(x = x, y = y, fill = lyr1)) +
   geom_raster(interpolate = T)  +
-  scale_fill_gradient(low = "grey35", high = "grey100") +
+  scale_fill_gradient(low = "grey1", high = "grey100") +
   guides(fill = 'none') +
   theme_void() +
   theme(aspect.ratio=1, plot.title = element_text(hjust = 0.5)) +
@@ -123,8 +110,9 @@ ggplot(data = hillshade, aes(x = x, y = y, fill = lyr1)) +
 
   geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.7, inherit.aes = F) +
   geom_sf(data = wa, fill = rgb(254, 204, 92, max = 255),
-          color = NA,  inherit.aes = F) +
-  geom_sf(data = acec_grid, fill = NA, aes(color = 'grey25'), alpha = 0.7,  inherit.aes = F) +
+          color = NA,  inherit.aes = F, alpha = 0.8) +
+  geom_sf(data = acec_grid, fill = NA, aes(color = 'grey25'), 
+          alpha = 0.7,  inherit.aes = F) +
   geom_sf(data = gg, aes(color = 'darkgreen'), lwd = 1.0, 
           fill = NA, alpha = 0.7,  inherit.aes = F) +
   geom_sf(data = AIM, aes(shape = Dumm), size = 2,  inherit.aes = F) +
