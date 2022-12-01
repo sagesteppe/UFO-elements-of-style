@@ -12,9 +12,11 @@ rm(p)
 pcarto <- '/media/sagesteppe/ExternalHD/UFO_cartography'
 coarseDEM <- rast(file.path(pcarto,
                        'EarthEnv-DEM90_N35W110/EarthEnv-DEM90_N35W110.bil' ))
-
 template <- rast(demp)
 rm(pcarto)
+
+#coarseDEMUTM <- project(coarseDEM, 'epsg:26913')
+#writeRaster(coarseDEMUTM, file.path(pcarto, 'DEM', 'UFO_DEM_90_UTM.tif'))
 
 coarseDEM <- aggregate(coarseDEM, 5, method="bilinear")
 coarseDEM <- project(coarseDEM, crs(template))
@@ -32,11 +34,13 @@ hillshade <- as.data.frame(hill, xy = T)
 names(altitude) <- c('x','y','elevation')
 altitude$cut <- cut(altitude$elevation, breaks = 25)
 
-p2d <- '/media/sagesteppe/ExternalHD/UFO_cartography'
-ifelse(!dir.exists(file.path(p2d, 'Hillshade')), 
-       dir.create(file.path(p2d, 'Hillshade')), FALSE)
-writeRaster(hill, file.path(p2d, 'Hillshade', 'Hillshade.tif'))
-rm(aspect, hill)
+hill <- project(hill, 'epsg:26913')
+
+#p2d <- '/media/sagesteppe/ExternalHD/UFO_cartography'
+#ifelse(!dir.exists(file.path(p2d, 'Hillshade')), 
+#       dir.create(file.path(p2d, 'Hillshade')), FALSE)
+#writeRaster(hill, file.path(p2d, 'Hillshade', 'Hillshade.tif'), overwrite = T)
+#rm(aspect, hill)
 
 places <- tigris::places(state = 'CO') %>% 
   vect() %>% 
@@ -47,7 +51,6 @@ places <- tigris::places(state = 'CO') %>%
   select(NAME) %>% 
   filter(NAME %in% c('Grand Junction', 'Montrose',
                      'Telluride', 'Nucla', 'Paonia'))
-
 rm(coarseDEM)
 
 hillshade_m <- 
@@ -87,6 +90,29 @@ ggsave(plot = elevation_countour, device = "png", filename = 'elevation_contour_
        path = p1, 
        width = 3.5, height = 3.5, units = 'in',  dpi = 300)
 
+
+
+# also need to create a fine resolution hillshade !! 
+# too coarse for many applications (e.g. the NCA's and WSA's !!!)
+pcarto <- '/media/sagesteppe/ExternalHD/UFO_cartography'
+fineDEM <- rast(file.path(pcarto, 'DEM',
+                          'UFO_dem_10_smooth_UTM.tif' ))
+template <- rast(demp)
+rm(pcarto)
+
+plot(fineDEM)
+
+slope <- terrain(fineDEM, "slope", unit="radians")
+aspect <- terrain(fineDEM, "aspect", unit="radians")
+hill <- shade(slope, aspect, 30, 315)
+plot(hill, col=grey(0:100/100), legend=FALSE, mar=c(2,2,1,4))
+plot(fineDEM, col=rainbow(25, alpha=0.35), add=TRUE)
+
+p2d <- '/media/sagesteppe/ExternalHD/UFO_cartography'
+ifelse(!dir.exists(file.path(p2d, 'Hillshade')), 
+       dir.create(file.path(p2d, 'Hillshade')), FALSE)
+writeRaster(hill, file.path(p2d, 'Hillshade', 'Hillshade_fine.tif'), overwrite = T)
+rm(aspect, hill)
 
 rm(demp, hillshade_p, p1, hillshade_m, places, slope, template, 
    altitude, elevation_countour, hillshade)

@@ -211,7 +211,6 @@ ggplot(nhd) +
 
 rm(nhd_l1, nhd_l2, nhd_l3)
 
-
 ifelse(!dir.exists(file.path(p2carto, 'NHD', 'NHDprocessed')), 
        dir.create(file.path(p2carto, 'NHD', 'NHDprocessed')), FALSE)
 st_write(nhd, file.path(p2carto, 'NHD', 'NHDprocessed', 'NHD_UFO.shp'))
