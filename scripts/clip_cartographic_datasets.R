@@ -21,8 +21,8 @@ allotments <- st_read(
 administrative_boundaries <- st_read(
   file.path(p2carto, vector_data[grep('*admu_', vector_data)]), quiet = T)
 
-administrative_boundaries_utah <- st_read(
-  file.path(p2carto, vector_data[grep('*admut', vector_data)]), quiet = T)
+#administrative_boundaries_utah <- st_read(
+#  file.path(p2carto, vector_data[grep('*admut', vector_data)]), quiet = T)
 
 grouse <- st_read(
   file.path(p2carto, vector_data[grep('*Grouse*', vector_data)]), quiet = T)
