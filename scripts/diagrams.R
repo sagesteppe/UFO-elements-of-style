@@ -9,8 +9,13 @@ d <- data.frame(
   'panel' = sample(rep(1:5, each = 10))
 )
 
-
-plot(d$x,d$ y, col = factor(d$panel),  
-     ylab = "", xlab = "", xaxt='n', yaxt  ="n")
-
+ggplot(d, aes(x = x,y = y, color = as.character(panel))) +
+  geom_jitter(width = 20) +
+  theme_bw() +
+  labs(title = "A sample frame with five panels", color = 'Panel',
+       x = NULL, y = NULL) +
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text=element_blank(), axis.ticks=element_blank(),
+        panel.grid.minor = element_blank(), panel.grid.major = element_blank()
+        )
 

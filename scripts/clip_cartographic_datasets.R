@@ -19,7 +19,10 @@ allotments <- st_read(
   file.path(p2carto, vector_data[grep('*Grazing*', vector_data)]), quiet = T)
 
 administrative_boundaries <- st_read(
-  file.path(p2carto, vector_data[grep('*admu*', vector_data)]), quiet = T)
+  file.path(p2carto, vector_data[grep('*admu_', vector_data)]), quiet = T)
+
+administrative_boundaries_utah <- st_read(
+  file.path(p2carto, vector_data[grep('*admut', vector_data)]), quiet = T)
 
 grouse <- st_read(
   file.path(p2carto, vector_data[grep('*Grouse*', vector_data)]), quiet = T)
@@ -152,6 +155,32 @@ st_intersection(st_transform(unc_bbox, st_crs(wa)), wa) %>%
 rm(unc_bbox, padus, nm_and_nca, grouse, administrative_boundaries, acec, wa, aim,
    mlra)
 
+# Create a mask for the surrounding field offices
+
+extent <- administrative_boundaries %>%
+  filter(FIELD_O == 'UNCOMPAHGRE') %>% 
+  st_buffer(6436) %>% 
+  st_bbox() %>% 
+  st_as_sfc() %>% 
+  st_as_sf() 
+
+maskCO <- administrative_boundaries %>%
+  filter(FIELD_O != 'UNCOMPAHGRE') %>% 
+  st_crop(., extent) %>% 
+  st_union()
+maskUT <- administrative_boundaries_utah %>% 
+  st_transform(26913) %>% 
+  st_buffer(7) %>% 
+  st_crop(., extent) %>% 
+  st_union()
+
+ifelse(!dir.exists(file.path(p2carto, 'UFO_mask', 'mask')), 
+       dir.create(file.path(p2carto, 'UFO_mask', 'mask')), FALSE)
+mask_UFO <- st_union(maskCO, maskUT) %>% 
+  st_as_sf() %>% 
+  st_write(
+    file.path(p2carto,  'UFO_mask', 'mask', 'mask.shp'), append = F, quiet = T
+  )
 
 # geodatabases here 
 
@@ -205,9 +234,6 @@ nhd <- bind_rows(nhd_l1, nhd_l2, nhd_l3) %>%
   summarize(geometry = st_union(geometry)) # takes some time. 
 
 nhd <- st_transform(nhd, 26913)
-
-ggplot(nhd) +
-  geom_sf()
 
 rm(nhd_l1, nhd_l2, nhd_l3)
 
@@ -270,7 +296,6 @@ tabeguache %>%
   st_write(., 
            file.path(p2carto, vector_data[grep('*Tabeguache*', vector_data)]),
            append = F)
-
 
 rm(tabeguache, p2carto, vector_data, administrative_boundaries)
 
