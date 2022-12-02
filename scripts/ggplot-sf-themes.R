@@ -139,7 +139,7 @@ ggNCA <- ggplot() +
         title=element_text(hjust = 0.5)) +
   
   labs(fill = 'Management', 
-       title = 'AIM Plots sampled near Gunnison Gorge NCA') +
+       title = 'Gunnison Gorge area plots') +
   scale_fill_manual(values = c(plp1),
                     limits = c("BLM", "NPS", "FWS", "Wilderness")) +
   scale_color_identity(name = NULL,  breaks = c("darkgreen", "maroon4"),
@@ -157,10 +157,10 @@ ggNCA <- ggplot() +
                          pad_x = unit(0.1, "in"), pad_y = unit(0.5, "in"),
                          style = north_arrow_minimal) 
 
-#setwd('/media/sagesteppe/ExternalHD/UFO_elements_of_style')
-#ggsave(ggNCA, path = 'results/maps', device = 'png',
-#       bg = 'transparent', filename = 'GunnisonGorgeAIMPlots',
-#       dpi = 300, width = 4, height = 6 , units = "in")
+setwd('/media/sagesteppe/ExternalHD/UFO_elements_of_style')
+ggsave(ggNCA, path = 'results/maps', device = 'png',
+       bg = 'transparent', filename = 'GunnisonGorgeAIMPlots.png',
+       dpi = 300, width = 4, height = 6 , units = "in")
 
 
  # Create Basemaps and Templates for the Dominguez Escalente NCA
@@ -202,7 +202,7 @@ acec_rivers <- st_crop(rivers, bbox)
 
 AIM <- aim %>% mutate(Dumm = 'A') %>% st_crop(., bbox)
 
-ggplot() +
+deNCA <- ggplot() +
   geom_raster(data = hillshade, aes(x = x, y = y, fill = lyr1), 
               interpolate = F)  +
   scale_fill_gradient(low = "grey50", high = "grey100") +
@@ -228,7 +228,7 @@ ggplot() +
   theme(legend.title.align = 0.5, 
         title=element_text(hjust = 0.5)) +
   
-  labs(title = 'AIM Plots sampled near Dominguez-Escalente NCA') +
+  labs(title = 'Dominguez-Escalente area plots') +
   scale_fill_manual('Management', values = plp1) +
   scale_color_identity(name = NULL,  breaks = c("darkgreen", "maroon4", "black"),
                        labels = c("NCA", "ACEC", "UFO/GJFO"),  guide = "legend") +
@@ -247,7 +247,7 @@ ggplot() +
 
 setwd('/media/sagesteppe/ExternalHD/UFO_elements_of_style')
 ggsave(deNCA, path = 'results/maps', device = 'png',
-       bg = 'transparent', filename = 'DominguezEscalenteAIMPlots',
+       bg = 'transparent', filename = 'DominguezEscalenteAIMPlots.png',
        dpi = 300, width = 4, height = 6 , units = "in")
 
 
