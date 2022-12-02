@@ -26,7 +26,7 @@ gtlf_roads <- st_read(
   file.path(p2carto, vector_data[grep('*GTLF*', vector_data)]), quiet = T)
 
 padus <- st_read(
-  file.path(p2carto, vector_data[grep('PAD.*Combined*', vector_data)]), quiet = T)
+  file.path(p2carto, vector_data[grep('PAD.*Fee*', vector_data)]), quiet = T)
 
 mask <- st_read(
   file.path(p2carto, vector_data[grep('*mask*', vector_data)]), quiet = T)
@@ -77,9 +77,8 @@ public_lands_pal <- setNames(
     rgb(143, 181, 190, max = 255) # CITY CNTY
   ), 
   c( # names
-    'BLM', 'USFS', 'NPS', 'FWS', 'USBR', 'TRIB', 'DOD', 'OTHF', 'SLB', 'PVT', 'CITY_CNTY_SDC_SDNR_SPR')
+    'BLM', 'USFS', 'NPS', 'FWS', 'USBR', 'TRIB', 'DOD', 'OTHF', 'SLB', 'Private', 'Local-State')
 )
-
 
 # Create Basemaps and Templates for the Gunnison Gorge NCA
 
@@ -102,12 +101,14 @@ ACEC <- st_crop(acec, bbox)
 acec_grid <- st_make_grid(ACEC, square = F , flat_topped =  T, n = c(5, 5))
 acec_grid <- st_intersection(ACEC, acec_grid)
 
-AIM_de <- aim %>% mutate(Dumm = 'A') %>% st_crop(., bbox)
+AIM_gg <- aim %>% mutate(Dumm = 'A') %>% st_crop(., bbox)
 acec_streams <- st_crop(streams, bbox)
 acec_rivers <- st_crop(rivers, bbox)
 
-hill <- crop(hill, ext(terra::vect(extent)))
-hillshade <- as.data.frame(hill, xy = T)
+hill_gg <- crop(hill, ext(terra::vect(extent)))
+hillshade <- as.data.frame(hill_gg, xy = T)
+
+mask_gg <- st_crop(mask, bbox)
 
 plp1 <- '#FECC5C'
 names(plp1) <- 'Wilderness'
@@ -127,9 +128,10 @@ ggNCA <- ggplot() +
   geom_sf(data = acec_grid, fill = NA, aes(color = 'maroon4'), alpha = 0.5) +
   geom_sf(data = gg, aes(color = 'darkgreen'), lwd = 1.0, 
           fill = NA, alpha = 0.5) +
-  geom_sf(data = AIM_de, aes(shape = Dumm), size = 3) +
+  geom_sf(data = AIM_gg, aes(shape = Dumm), size = 3) +
   geom_sf(data = acec_rivers, alpha = 0.5, color = 'blue') +
   geom_sf(data = acec_streams, alpha = 0.2, color = 'blue', lty = 'twodash') +
+  geom_sf(data = mask_gg, color = 'white', alpha = 0.7, lwd = 0) +
   
   coord_sf(xlim = c(bbox['xmin'], bbox['xmax']), 
            ylim = c(bbox['ymin'], bbox['ymax'])) +
@@ -140,8 +142,7 @@ ggNCA <- ggplot() +
   
   labs(fill = 'Management', 
        title = 'AIM Plots sampled near Gunnison Gorge NCA') +
-  scale_fill_manual(values = c(plp1),
-                    limits = c("BLM", "NPS", "FWS", "Wilderness")) +
+  scale_fill_manual(values = c(plp1)) +
   scale_color_identity(name = NULL,  breaks = c("darkgreen", "maroon4"),
                        labels = c("NCA", "ACEC"),  guide = "legend") +
   scale_shape_manual(name = NULL, labels = 'AIM Plots',  values =  18) +
@@ -157,17 +158,17 @@ ggNCA <- ggplot() +
                          pad_x = unit(0.1, "in"), pad_y = unit(0.5, "in"),
                          style = north_arrow_minimal) 
 
-#setwd('/media/sagesteppe/ExternalHD/UFO_elements_of_style')
-#ggsave(ggNCA, path = 'results/maps', device = 'png',
-#       bg = 'transparent', filename = 'GunnisonGorgeAIMPlots',
-#       dpi = 300, width = 4, height = 6 , units = "in")
+ggNCA
+setwd('/media/sagesteppe/ExternalHD/UFO_elements_of_style')
+ggsave(ggNCA, path = 'results/maps', device = 'png',
+       bg = 'transparent', filename = 'GunnisonGorgeAIMPlots.png',
+       dpi = 300, width = 4, height = 6 , units = "in")
 
-rm(ggNCA, mask_gg, plp1, plp, gg)
+rm(ggNCA, mask_gg, plp1, plp, gg, hill_gg, extent, bbox, Pad, public_lands_pal1)
 
  # Create Basemaps and Templates for the Dominguez Escalente NCA
 
-de <- filter(nm_and_nca, NLCS_NAME
-             =='Dominguez/Escalante National Conservation Area') 
+de <- filter(nm_and_nca, NLCS_NAME =='Dominguez/Escalante National Conservation Area') 
 extent <- de %>% 
   st_buffer(3218) %>% 
   st_bbox(gg) %>% 
@@ -179,11 +180,8 @@ Pad <- st_intersection(extent, padus) %>%
 bbox <- st_bbox(extent)
 
 public_lands_pal1 <- public_lands_pal
-names(public_lands_pal1)[11] <- 'Local-State'
 plp <- public_lands_pal[c(unique(Pad$Own_Name))]
 plp <- plp[order(names(plp))]
-names(plp)[2] <- 'Local-State'
-plp <- plp[1:3]
 plp1 <- '#FECC5C'
 names(plp1) <- 'Wilderness'
 plp1 <- c(plp, plp1)
@@ -193,15 +191,17 @@ acec_grid <- st_make_grid(ACEC, square = F , flat_topped =  T, n = c(25, 25))
 acec_grid <- st_intersection(acec, acec_grid)
 acec_grid <- st_crop(acec_grid, bbox)
 ADMU <- st_crop(administrative_boundaries, bbox)
-hill <- crop(hill, ext(terra::vect(extent))) # Reload the native hill dataset
+
+hill <- crop(hill, ext(terra::vect(extent))) 
 hillshade <- as.data.frame(hill, xy = T)
+
 acec_streams <- st_crop(streams, bbox)
 acec_rivers <- st_crop(rivers, bbox)
 
 AIM <- aim %>% mutate(Dumm = 'A') %>% st_crop(., bbox)
 mask_de <- st_crop(mask, bbox)
 
-ggplot() +
+deNCA <- ggplot() +
   geom_raster(data = hillshade, aes(x = x, y = y, fill = lyr1), 
               interpolate = F)  +
   scale_fill_gradient(low = "grey50", high = "grey100") +
@@ -245,37 +245,39 @@ ggplot() +
                          pad_x = unit(0.1, "in"), pad_y = unit(0.5, "in"),
                          style = north_arrow_minimal) 
 
-#setwd('/media/sagesteppe/ExternalHD/UFO_elements_of_style')
-#ggsave(deNCA, path = 'results/maps', device = 'png',
-#       bg = 'transparent', filename = 'DominguezEscalenteAIMPlots',
-#       dpi = 300, width = 4, height = 6 , units = "in")
+deNCA
+ggsave(deNCA, path = 'results/maps', device = 'png',
+       bg = 'transparent', filename = 'DominguezEscalenteAIMPlots.png',
+       dpi = 300, width = 4, height = 6 , units = "in")
 
 rm(deNCA, de, plp, plp1, public_lands_pal1, hillshade, mask_de, acec_rivers, acec_streams)
 
 # Map of points sampled across the entire field office
 
 ADMU <- filter(administrative_boundaries, FIELD_O == 'UNCOMPAHGRE')
-extent <- ufo_bound %>% 
+extent <- ADMU %>% 
   st_buffer(1000) %>% 
   st_bbox(gg) %>% 
   st_as_sfc() %>% 
   st_as_sf()
 bbox <- st_bbox(extent)
 
+ACEC <- st_crop(acec, bbox)
+acec_grid <- st_make_grid(ACEC, square = F , flat_topped =  T, n = c(20, 20))
+acec_grid <- st_intersection(ACEC, acec_grid)
+
 hill <- rast(
-  file.path(p2carto, raster_data[grep('Hill.*coarse', raster_data)])
-)
+  file.path(p2carto, raster_data[grep('Hill.*coarse', raster_data)]) )
 hill <- crop(hill, ext(terra::vect(extent)))
 hillshade <- as.data.frame(hill, xy = T)
+
 streams <- st_crop(streams, bbox)
 rivers <- st_crop(rivers, bbox)
-
 mask <- st_crop(mask, bbox)
-
-Pad <- st_intersection(extent, padus) %>% 
-  mutate(Own_Name = if_else(Own_Name == 'CITY_CNTY_SDC_SDNR_SPR', 'Local-State', Own_Name))
+Pad <- st_crop(padus, bbox)
 
 aim_ufo <- aim %>% mutate(Dumm = 'A') %>% st_crop(., bbox)
+nm_and_nca <- st_crop(nm_and_nca, bbox)
 
 public_lands_pal1 <- public_lands_pal
 names(public_lands_pal1)[11] <- 'Local-State'
@@ -283,7 +285,7 @@ plp <- public_lands_pal[c(unique(Pad$Own_Name))]
 plp <- plp[order(names(plp))]
 plp <- plp[!is.na(plp)]
 
-ggplot() +
+aim_pts <- ggplot() +
   geom_raster(data = hillshade, aes(x = x, y = y, fill = lyr1), 
               interpolate = F)  +
   scale_fill_gradient(low = "grey50", high = "grey100") +
@@ -292,40 +294,61 @@ ggplot() +
   theme(aspect.ratio=1, plot.title = element_text(hjust = 0.5)) +
   ggnewscale::new_scale_fill() +
   
-  
   geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.7, color = NA) +
-  
   geom_sf(data = wa, fill = '#FECC5C', color = NA, alpha = 0.4) +
   geom_sf(data = acec_grid, fill = NA, aes(color = 'maroon4'), alpha = 0.5) +
   geom_sf(data = rivers, alpha = 0.5, color = 'blue') +
-  geom_sf(data = aim_ufo, aes(shape = Dumm), size = 2) +
+  geom_sf(data = aim_ufo, aes(shape = Dumm), size = 1) +
   geom_sf(data = ADMU, fill = NA, aes(color = 'black'), lwd = 1.0) +
-  
-  
+  geom_sf(data = nm_and_nca, fill = NA, aes(color = 'darkgreen'), lwd = 1.0) +
   geom_sf(data = mask, color = 'white', alpha = 0.7, lwd = 0)  +
-  
-  
+
   coord_sf(xlim = c(bbox['xmin'], bbox['xmax']), 
            ylim = c(bbox['ymin'], bbox['ymax'])) +
   
   theme_void() +
   theme(legend.title.align = 0.5, 
+        plot.title = element_text(hjust = 0.5),
         title=element_text(hjust = 0.5)) +
   
   labs(title = 'AIM Plots sampled in the UFO') +
   scale_fill_manual('Management', values = plp) +
   scale_color_identity(name = NULL,  breaks = c("darkgreen", "maroon4", "black"),
-                       labels = c("NCA", "ACEC", "UFO/GJFO"),  guide = "legend") +
-  scale_shape_manual(name = NULL, labels = 'AIM Plots', values =  18) +
+                       labels = c("NCA", "ACEC", "UFO"),  guide = "legend") +
+  scale_shape_manual(name = NULL, labels = 'AIM Plots', values =  23) +
   guides(
     fill = guide_legend(order = 1),
     colour = guide_legend(order = 2),
     shape = guide_legend(order = 3)) +
   
   annotation_scale(location = "bl", 
-                   pad_x = unit(0.25, "in"), pad_y = unit(0.3, "in"),
-                   width_hint = 0.225) +
+                   pad_x = unit(0.35, "in"), pad_y = unit(0.4, "in"),
+                   width_hint = 0.3) +
   annotation_north_arrow(location = "bl", which_north = "true", 
-                         pad_x = unit(0.1, "in"), pad_y = unit(0.5, "in"),
+                         pad_x = unit(0.15, "in"), pad_y = unit(0.65, "in"),
                          style = north_arrow_minimal) 
 
+aim_pts
+ggsave(aim_pts, path = 'results/maps', device = 'png',
+       bg = 'transparent', filename = 'AIMPlots.png',
+       dpi = 300, width = 6, height = 9, units = "in")
+
+
+
+# now acec facet wraps....
+
+ufo_acec <- st_intersection(acec, 
+                            filter(administrative_boundaries, FIELD_O == 'UNCOMPAHGRE'))
+
+  
+library(tmap)
+
+
+tm_shape(ufo_acec) +
+  tm_borders() +
+  tm_facets(by = "ACEC_NAME")
+
+
+ggplot(data = ufo_acec) +
+  geom_sf() +
+  facet_wrap(~ ACEC_NAME, scales = 'free')

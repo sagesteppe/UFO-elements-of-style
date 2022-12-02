@@ -300,3 +300,37 @@ tabeguache %>%
 rm(tabeguache, p2carto, vector_data, administrative_boundaries)
 
   
+
+
+# reprocess PADus to make ALL private areas 'white' for a continual cover around it
+# it is hard to have the greyscale stand out from the NPS colour without this. 
+
+st_erase = function(x, y) st_difference(x, st_union(y))
+
+padus <- st_read(
+  file.path(p2carto, vector_data[grep('PAD.*Fee*', vector_data)]), quiet = T)
+
+padus <- padus %>% 
+  mutate(Own_Name = case_when(
+    Own_Name == 'CITY_CNTY_SDC_SDNR_SPR' ~ 'LOCAL-STATE', 
+    Own_Name %in% c('NGO','PVT') ~ 'PVT',
+    TRUE ~ Own_Name
+  )) %>% 
+  group_by(Own_Name)
+
+inverse <- st_bbox(padus) %>% 
+  st_bbox(gg) %>% 
+  st_as_sfc() %>% 
+  st_as_sf() %>% 
+  st_erase(., padus) %>% 
+  mutate(Own_Type = 'Private', 
+         Own_Name = 'PVT', 
+         d_Own_Name = 'Private-NOT PROTECTED - this for mask', 
+         Mang_Type = 'Private') %>% 
+  rename(geometry = x) %>% 
+  dplyr::relocate(geometry, .after = Mang_Type)
+
+bind_rows(padus, inverse) %>% 
+  st_write(., 
+           file.path(p2carto, vector_data[grep('PAD.*Fee*', vector_data)]), 
+           append = F)
