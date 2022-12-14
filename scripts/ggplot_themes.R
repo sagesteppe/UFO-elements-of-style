@@ -12,7 +12,7 @@ library(ggpubr)
 #' @rdname UFO_EoS
 theme_boxplot <- function(){ 
     font = "sans"   #assign font family up front
-    base_size = 12
+    base_size = 10
     legend.position = 'none'
     
     theme_classic() %+replace%    #replace elements we want to change
@@ -25,15 +25,15 @@ theme_boxplot <- function(){
         #text elements
         plot.title = element_text(             #title
           family = font,            #set font family
-          size = 14,                #set font size
+          size = 12,                #set font size
           face = 'bold',            #bold typeface
           hjust = 0.5,                #left align     
-          vjust = 2
+          vjust = 3
         ),
         
         plot.subtitle = element_text(          #subtitle
           family = font,            #font family
-          size = 14),               #font size
+          size = 11),               #font size
         
         plot.caption = element_text(  #caption
           family = font,            #font family
@@ -45,7 +45,7 @@ theme_boxplot <- function(){
         
         axis.text = element_text(              #axis text
           family = font,            #axis famuly
-          size = 9),                #font size
+          size = 8),                #font size
         
         axis.text.x = element_text(            #margin for axis text
           margin=margin(5, b = 10)),

@@ -37,16 +37,16 @@ boxplot_drawer <- function(df, response, col_pal, group){
                         alpha = 0.5) + 
     stat_boxplot(notch = T, notchwidth = 0.75, 
                  varwidth = T, 
-                 outlier.shape = 1, outlier.alpha = 0.4, outlier.colour = 'black') +
+                 outlier.shape = 1, outlier.alpha = 0.8, outlier.colour = 'black') +
     
     geom_text(data = sample_sizes,
               aes(!!group, Inf, label = n), color = 'black', 
-              vjust = "inward", size = 3, 
+              vjust = "inward", size = 9, 
               y = min_v * 0.95) +
     ggpubr::stat_compare_means(comparisons = my_comparisons, 
                        aes(label = ..p.signif..),
-                       tip.length = 0, vjust = 0.25) +
-    ggpubr::stat_compare_means(label.y = min_v * 0.85)  +
+                       tip.length = 0, vjust = 0.25, size = 9) +
+    ggpubr::stat_compare_means(label.y = min_v * 0.85, size = 9)  +
     
     theme_boxplot() +
     
@@ -59,7 +59,9 @@ boxplot_drawer <- function(df, response, col_pal, group){
 strata_pal_test <- c("setosa" = "#4A5A28", "versicolor" = "#ADB1B9", "virginica" = "#CEB88E")
 iris_box <- boxplot_drawer(df = iris, response = Sepal.Length, 
                            group = Species, col_pal = strata_pal_test)
-plot(iris_box) + labs(title = 'Comparision of Sepal Length in Iris Species') 
+iris_box <- plot(iris_box) + labs(title = 'Sepal Length in Iris') 
+ggsave(iris_box, path = '../results/plots/', filename = 'boxplot_drawer.png', width = 720, height = 720, 
+       units = 'px', device = 'png')
 
 #' Draws a stacked barchart to convey number of observations, a binomial response, 
 #' and confidence estimates of the response. 
