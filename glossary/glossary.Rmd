@@ -4,6 +4,8 @@
 
 *inference*
 
+*integrity*
+
 *sample frame*
 
 *reproductively active*
@@ -11,4 +13,6 @@
 *panel*
 
 *target frame*
+
+*sampling cycle*
 

@@ -16,22 +16,22 @@
 #' @seealso theme_boxplot
 boxplot_drawer <- function(df, response, col_pal, group){
   
-  term <- as.formula(paste(rlang::expr(response), " ~ ", rlang::expr(group)))
+  term <- as.formula(paste(rlang::enexpr(response), ' ~ ', dplyr::enexpr(group)))
   response <- rlang::enquo(response)
   group <- rlang::enquo(group)
   
   my_means <- ggpubr::compare_means(term,  data = df)
-  my_comparisons <- my_means |> 
-    purrr::nest(groups = c(group1, group2)) |>  
-    dplyr::pull(groups) |> 
-    purrr::map(., as.character)
+  my_comparisons <- my_means %>% 
+    nest(groups = c(group1, group2)) %>% 
+    pull(groups) %>% 
+    map(., as.character)
   
-  min_v <- summarise(df, mean_mpg = floor(min(!!response))) |> pull()
+  min_v <- dplyr::summarise(df, mean_mpg = floor(min(!!response))) |> pull()
   
-  sample_sizes <- df |> 
-    group_by(!!group) |>  
-    tally() |> 
-    mutate(n = paste0('n = ', n))
+  sample_sizes <- df %>% 
+    dplyr::group_by(!!group) %>%  
+    dplyr::tally() %>% 
+    dplyr::mutate(n = paste0('n = ', n)) 
   
   ufo_boxplot <- ggplot(df, aes(x = !!group, y = !!response, colour = !!group),  
                         alpha = 0.5) + 
@@ -43,10 +43,10 @@ boxplot_drawer <- function(df, response, col_pal, group){
               aes(!!group, Inf, label = n), color = 'black', 
               vjust = "inward", size = 3, 
               y = min_v * 0.95) +
-    stat_compare_means(comparisons = my_comparisons, 
+    ggpubr::stat_compare_means(comparisons = my_comparisons, 
                        aes(label = ..p.signif..),
                        tip.length = 0, vjust = 0.25) +
-    stat_compare_means(label.y = min_v * 0.85)  +
+    ggpubr::stat_compare_means(label.y = min_v * 0.85)  +
     
     theme_boxplot() +
     
