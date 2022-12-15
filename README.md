@@ -43,7 +43,7 @@ Thanks to M. Bach & M. Marsich
 ## Plots and Themes
 
 ### Barplots
-![Barplot](results/plots/stacked_prop_drawer.png)
+![Barplot](results/plots/boxplot_drawer.png)
 
 
 This plot utilizes the base theme 'theme_boxplot' and is based upon the boxplot of Tukey. It is used to display several components:
