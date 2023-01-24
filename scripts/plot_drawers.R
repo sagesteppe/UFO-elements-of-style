@@ -56,12 +56,13 @@ boxplot_drawer <- function(df, response, col_pal, group){
   return(ufo_boxplot)
 }
 
-strata_pal_test <- c("setosa" = "#4A5A28", "versicolor" = "#ADB1B9", "virginica" = "#CEB88E")
-iris_box <- boxplot_drawer(df = iris, response = Sepal.Length, 
-                           group = Species, col_pal = strata_pal_test)
-iris_box <- plot(iris_box) + labs(title = 'Sepal Length in Iris')
-ggsave(iris_box, path = '../results/plots/', 
-       filename = 'boxplot_drawer.png', width = 720, height = 720,  units = 'px', device = 'png', bg = 'transparent')
+
+#strata_pal_test <- c("setosa" = "#4A5A28", "versicolor" = "#ADB1B9", "virginica" = "#CEB88E")
+#iris_box <- boxplot_drawer(df = iris, response = Sepal.Length, 
+#                           group = Species, col_pal = strata_pal_test)
+#iris_box <- plot(iris_box) + labs(title = 'Sepal Length in Iris')
+#ggsave(iris_box, path = '../results/plots/', 
+#       filename = 'boxplot_drawer.png', width = 720, height = 720,  units = 'px', device = 'png', bg = 'transparent')
 
 #' Draws a stacked barchart to convey number of observations, a binomial response, 
 #' and confidence estimates of the response. 

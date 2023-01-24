@@ -335,20 +335,64 @@ ggsave(aim_pts, path = 'results/maps', device = 'png',
 
 
 
-# now acec facet wraps....
+################################################################## 
+# Map of NE Portion of the field office for Invasive Species
 
-ufo_acec <- st_intersection(acec, 
-                            filter(administrative_boundaries, FIELD_O == 'UNCOMPAHGRE'))
 
+
+bbox <- st_bbox(
+  setNames(c(221114.9, 4278752.0,  286377.4, 4311463.6 ),
+           c('xmin', 'ymin', 'xmax', 'ymax' )) )
+
+hill <- rast(
+  file.path(p2carto, raster_data[grep('Hill.*fine', raster_data)])
+)
+hill <- crop(hill, terra::ext(terra::vect(st_as_sfc(bbox))))
+hillshade <- as.data.frame(hill, xy = T)
+
+streams <- st_crop(streams, bbox)
+rivers <- st_crop(rivers, bbox)
+mask <- st_crop(mask, bbox)
+Pad <- st_crop(padus, bbox)
+
+
+places <- tigris::places(state = 'CO') %>% 
+  vect() %>% 
+  project(., crs(streams)) %>% 
+  crop(., ext(streams)) %>% 
+  st_as_sf() %>% 
+  st_point_on_surface() %>% 
+  select(NAME) %>% 
+  filter(NAME %in% c('Delta', 'Hotchkiss', 'Cedaredge', 'Paonia', 'Crawford'))
+
+public_lands_pal1 <- public_lands_pal
+names(public_lands_pal1)[11] <- 'Local-State'
+plp <- public_lands_pal[c(unique(Pad$Own_Name))]
+plp <- plp[order(names(plp))]
+plp <- plp[!is.na(plp)]
+
+ggplot() +
+  geom_raster(data = hillshade, aes(x = x, y = y, fill = lyr1), 
+              interpolate = F)  +
+  scale_fill_gradient(low = "grey50", high = "grey100") +
+  guides(fill = 'none') +
+  theme_void() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggnewscale::new_scale_fill() +
   
-library(tmap)
-
-
-tm_shape(ufo_acec) +
-  tm_borders() +
-  tm_facets(by = "ACEC_NAME")
-
-
-ggplot(data = ufo_acec) +
-  geom_sf() +
-  facet_wrap(~ ACEC_NAME, scales = 'free')
+  geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.7, color = NA) +
+  geom_sf(data = rivers, alpha = 0.5, color = 'blue') +
+  geom_sf(data = streams, alpha = 0.1, color = 'blue') +
+  geom_sf(data = mask, color = 'white', alpha = 0.7, lwd = 0)  +
+#  geom_sf(data = r_locations_ne, aes(color = SYMBOL), shape = 7, size = 3) +
+  
+  coord_sf(xlim = c(bbox['xmin'], bbox['xmax']), 
+           ylim = c(bbox['ymin'], bbox['ymax']))  +
+  
+  labs(title = 'Invasive Species in the NE Field Office') +
+  scale_fill_manual('Management', values = plp) +
+#  scale_color_manual('Species', 
+#                     values = colorspace::qualitative_hcl(12, palette = "Dark 3"),
+#                     labels=ne_labels) +
+  geom_sf_label(data = places, aes(label = NAME), inherit.aes = F,
+                alpha = 0.75, label.size  = NA) 
