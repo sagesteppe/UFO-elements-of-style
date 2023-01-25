@@ -339,6 +339,7 @@ ggsave(aim_pts, path = 'results/maps', device = 'png',
 # Map of NE Portion of the field office for Invasive Species
 
 
+r_locations_ne <- st_read(file.path(p2carto, 'noxious', 'noxious_NE.shp'))
 
 bbox <- st_bbox(
   setNames(c(221114.9, 4278752.0,  286377.4, 4311463.6 ),
@@ -354,7 +355,6 @@ streams <- st_crop(streams, bbox)
 rivers <- st_crop(rivers, bbox)
 mask <- st_crop(mask, bbox)
 Pad <- st_crop(padus, bbox)
-
 
 places <- tigris::places(state = 'CO') %>% 
   vect() %>% 
@@ -384,15 +384,14 @@ ggplot() +
   geom_sf(data = rivers, alpha = 0.5, color = 'blue') +
   geom_sf(data = streams, alpha = 0.1, color = 'blue') +
   geom_sf(data = mask, color = 'white', alpha = 0.7, lwd = 0)  +
-#  geom_sf(data = r_locations_ne, aes(color = SYMBOL), shape = 7, size = 3) +
+  geom_sf(data = r_locations_ne, aes(color = SYMBOL), shape = 7, size = 3) +
   
   coord_sf(xlim = c(bbox['xmin'], bbox['xmax']), 
            ylim = c(bbox['ymin'], bbox['ymax']))  +
   
   labs(title = 'Invasive Species in the NE Field Office') +
   scale_fill_manual('Management', values = plp) +
-#  scale_color_manual('Species', 
-#                     values = colorspace::qualitative_hcl(12, palette = "Dark 3"),
-#                     labels=ne_labels) +
+  scale_color_manual('Species', 
+                     values = colorspace::qualitative_hcl(12, palette = "Dark 3")) +
   geom_sf_label(data = places, aes(label = NAME), inherit.aes = F,
                 alpha = 0.75, label.size  = NA) 
