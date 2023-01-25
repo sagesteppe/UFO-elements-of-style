@@ -3,6 +3,7 @@ library(tidyverse)
 library(ggspatial)
 library(terra)
 library(ggnewscale)
+library(cowplot)
 
 p2carto <- '/media/sagesteppe/ExternalHD/UFO_cartography'
 vector_data <- list.files(p2carto, recursive = T, pattern = 'shp$')
@@ -338,16 +339,17 @@ ggsave(aim_pts, path = 'results/maps', device = 'png',
 ################################################################## 
 # Map of NE Portion of the field office for Invasive Species
 
-
 r_locations_ne <- st_read(file.path(p2carto, 'noxious', 'noxious_NE.shp'))
+ne_labels <- c(
+  "Alyssum desertorum",  "Cardaria chalepensis", "Cardaria draba", 
+  "Cirsium arvense", "Convolvulus arvensis",  "Cynoglossum officinale", 
+  "Gypsophila elegans", "Lepidium densiflorum",  "Phleum pratense",  
+  "Polygonum aviculare",  "Potentilla argentea", "Tamarix ramosissima")
 
 bbox <- st_bbox(
   setNames(c(221114.9, 4278752.0,  286377.4, 4311463.6 ),
            c('xmin', 'ymin', 'xmax', 'ymax' )) )
 
-hill <- rast(
-  file.path(p2carto, raster_data[grep('Hill.*fine', raster_data)])
-)
 hill <- crop(hill, terra::ext(terra::vect(st_as_sfc(bbox))))
 hillshade <- as.data.frame(hill, xy = T)
 
@@ -371,13 +373,14 @@ plp <- public_lands_pal[c(unique(Pad$Own_Name))]
 plp <- plp[order(names(plp))]
 plp <- plp[!is.na(plp)]
 
-ggplot() +
+p1 <- ggplot() +
   geom_raster(data = hillshade, aes(x = x, y = y, fill = lyr1), 
               interpolate = F)  +
   scale_fill_gradient(low = "grey50", high = "grey100") +
   guides(fill = 'none') +
   theme_void() +
-  theme(plot.title = element_text(hjust = 0.5)) +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.title = element_text(hjust = 0.5)) +
   ggnewscale::new_scale_fill() +
   
   geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.7, color = NA) +
@@ -390,8 +393,108 @@ ggplot() +
            ylim = c(bbox['ymin'], bbox['ymax']))  +
   
   labs(title = 'Invasive Species in the NE Field Office') +
-  scale_fill_manual('Management', values = plp) +
-  scale_color_manual('Species', 
+  scale_fill_manual('Management', guide = 'none', values = plp) +
+  scale_color_manual('Species', labels=ne_labels,
                      values = colorspace::qualitative_hcl(12, palette = "Dark 3")) +
   geom_sf_label(data = places, aes(label = NAME), inherit.aes = F,
-                alpha = 0.75, label.size  = NA) 
+                alpha = 0.75, label.size  = NA) +
+  
+  annotation_scale(location = "bl", 
+                   pad_x = unit(0.35, "in"), pad_y = unit(0.4, "in"),
+                   width_hint = 0.3) +
+  annotation_north_arrow(location = "bl", which_north = "true", 
+                         pad_x = unit(0.15, "in"), pad_y = unit(0.65, "in"),
+                         style = north_arrow_minimal) 
+
+mleg <- get_legend(
+  ggplot() +
+  guides(fill = 'none') +
+  theme_void() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ggnewscale::new_scale_fill() +
+  
+  geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.7, color = NA) +
+  scale_fill_manual('Management', values = plp) +
+  theme(legend.position = 'bottom')
+)
+
+plot_grid(p1, mleg, 
+          ncol = 1, rel_heights = c(.85, .15))
+
+#############################################################################
+# Facet wraps of invasive species in other locations throughout the field office
+
+r_locations <- st_read(file.path(p2carto, 'noxious', 'noxious_all.shp'))
+r_locations <- st_jitter(r_locations, amount = 1500)
+
+inv <- read.csv(file.path(p2carto, 'noxious', 'Introducted_species_CO.csv')) %>% 
+  select(National_USDASymbol, National_SciName_noAuthority) %>% 
+  filter(National_USDASymbol %in% r_locations$SYMBOL) %>% 
+  pull(National_SciName_noAuthority)
+
+bbox <- st_bbox(r_locations)
+
+hill <- crop(hill, ext(terra::vect(r_locations)))
+hill <- aggregate(hill, 10)
+hillshade <- as.data.frame(hill, xy = T)
+
+rivers <- st_crop(rivers, bbox)
+mask <- st_crop(mask, bbox)
+Pad <- st_crop(padus, bbox)
+
+places <- tigris::places(state = 'CO') %>% 
+  vect() %>% 
+  project(., crs(streams)) %>% 
+  crop(., ext(streams)) %>% 
+  st_as_sf() %>% 
+  st_point_on_surface() %>% 
+  select(NAME) %>% 
+  filter(NAME %in% c('Delta', 'Paonia', 'Montrose', 'Nucla'))
+
+public_lands_pal1 <- public_lands_pal
+names(public_lands_pal1)[11] <- 'Local-State'
+plp <- public_lands_pal[c(unique(Pad$Own_Name))]
+plp <- plp[order(names(plp))]
+plp <- plp[!is.na(plp)]
+
+p1 <- ggplot() +
+  geom_raster(data = hillshade, aes(x = x, y = y, fill = lyr1), 
+              interpolate = F)  +
+  scale_fill_gradient(low = "grey50", high = "grey100") +
+  guides(fill = 'none') +
+  theme_void() +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.title = element_text(hjust = 0.5)) +
+  ggnewscale::new_scale_fill() +
+    
+  geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.7, color = NA) +
+  geom_sf(data = rivers, alpha = 0.5, color = 'blue') +
+  geom_sf(data = mask, color = 'white', alpha = 0.7, lwd = 0)  +
+  geom_sf(data = r_locations, aes(color = SYMBOL)) + 
+
+  geom_sf_label(data = places, aes(label = NAME), inherit.aes = F,
+                alpha = 0.45, label.size  = NA) +
+  scale_fill_manual('Management', guide = 'none', values = plp) +
+  
+  annotation_scale(location = "bl", 
+                   pad_x = unit(0.35, "in"), pad_y = unit(0.4, "in"),
+                   width_hint = 0.2) +
+  annotation_north_arrow(location = "bl", which_north = "true", 
+                         pad_x = unit(0.15, "in"), pad_y = unit(0.65, "in"),
+                         style = north_arrow_minimal) 
+    
+mleg <- get_legend(
+  ggplot() +
+    guides(fill = 'none') +
+    theme_void() +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    ggnewscale::new_scale_fill() +
+    
+    geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.7, color = NA) +
+    scale_fill_manual('Management', values = plp) +
+    theme(legend.position = 'bottom')
+)
+
+
+plot_grid(p1, mleg, 
+          ncol = 1, rel_heights = c(.85, .15))
