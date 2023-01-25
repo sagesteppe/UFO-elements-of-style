@@ -8,11 +8,11 @@ library(cowplot)
 p2carto <- '/media/sagesteppe/ExternalHD/UFO_cartography'
 vector_data <- list.files(p2carto, recursive = T, pattern = 'shp$')
 
-aim <- st_read(
-  file.path(p2carto, vector_data[grep('*Plots*', vector_data)]), quiet = T)
+# aim <- st_read(
+#  file.path(p2carto, vector_data[grep('*Plots*', vector_data)]), quiet = T)
 
-acec <- st_read(
-  file.path(p2carto, vector_data[grep('*ACEC*', vector_data)]), quiet = T)
+# acec <- st_read(
+#  file.path(p2carto, vector_data[grep('*ACEC*', vector_data)]), quiet = T)
 
 allotments <- st_read(
   file.path(p2carto, vector_data[grep('*Grazing*', vector_data)]), quiet = T)
@@ -20,11 +20,11 @@ allotments <- st_read(
 administrative_boundaries <- st_read(
   file.path(p2carto, vector_data[grep('*admu_', vector_data)]), quiet = T)
 
-grouse <- st_read(
-  file.path(p2carto, vector_data[grep('*Grouse*', vector_data)]), quiet = T)
+# grouse <- st_read(
+#  file.path(p2carto, vector_data[grep('*Grouse*', vector_data)]), quiet = T)
 
-gtlf_roads <- st_read(
-  file.path(p2carto, vector_data[grep('*GTLF*', vector_data)]), quiet = T)
+# gtlf_roads <- st_read(
+#  file.path(p2carto, vector_data[grep('*GTLF*', vector_data)]), quiet = T)
 
 padus <- st_read(
   file.path(p2carto, vector_data[grep('PAD.*Fee*', vector_data)]), quiet = T)
@@ -431,6 +431,7 @@ inv <- read.csv(file.path(p2carto, 'noxious', 'Introducted_species_CO.csv')) %>%
   select(National_USDASymbol, National_SciName_noAuthority) %>% 
   filter(National_USDASymbol %in% r_locations$SYMBOL) %>% 
   pull(National_SciName_noAuthority)
+inv <- unique(inv)
 
 bbox <- st_bbox(r_locations)
 
@@ -464,7 +465,12 @@ p1 <- ggplot() +
   guides(fill = 'none') +
   theme_void() +
   theme(plot.title = element_text(hjust = 0.5),
-        legend.title = element_text(hjust = 0.5)) +
+        legend.title = element_text(hjust = 0.5), 
+        legend.position = 'bottom', 
+        legend.spacing.y = unit(0.0, 'cm'),
+        legend.spacing.x = unit(0., 'pt'),
+        legend.text = element_text( size = 8,
+          margin = margin(l =-3, unit = "pt"))) +
   ggnewscale::new_scale_fill() +
     
   geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.7, color = NA) +
@@ -472,16 +478,20 @@ p1 <- ggplot() +
   geom_sf(data = mask, color = 'white', alpha = 0.7, lwd = 0)  +
   geom_sf(data = r_locations, aes(color = SYMBOL)) + 
 
+  labs(title = 'Invasive Species in the Field Office') +
   geom_sf_label(data = places, aes(label = NAME), inherit.aes = F,
                 alpha = 0.45, label.size  = NA) +
   scale_fill_manual('Management', guide = 'none', values = plp) +
+  scale_color_manual('Species', labels=inv, 
+                     values = colorspace::qualitative_hcl(length(inv), palette = "Dark 3")) +
   
   annotation_scale(location = "bl", 
                    pad_x = unit(0.35, "in"), pad_y = unit(0.4, "in"),
                    width_hint = 0.2) +
   annotation_north_arrow(location = "bl", which_north = "true", 
                          pad_x = unit(0.15, "in"), pad_y = unit(0.65, "in"),
-                         style = north_arrow_minimal) 
+                         style = north_arrow_minimal) +
+  guides(color = guide_legend(byrow = TRUE))
     
 mleg <- get_legend(
   ggplot() +
@@ -492,9 +502,9 @@ mleg <- get_legend(
     
     geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.7, color = NA) +
     scale_fill_manual('Management', values = plp) +
-    theme(legend.position = 'bottom')
+    theme(legend.position = 'right')
 )
 
 
 plot_grid(p1, mleg, 
-          ncol = 1, rel_heights = c(.85, .15))
+          ncol = 2, rel_widths = c(.85, .15))
