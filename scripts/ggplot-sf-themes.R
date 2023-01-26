@@ -14,8 +14,8 @@ vector_data <- list.files(p2carto, recursive = T, pattern = 'shp$')
 # acec <- st_read(
 #  file.path(p2carto, vector_data[grep('*ACEC*', vector_data)]), quiet = T)
 
-allotments <- st_read(
-  file.path(p2carto, vector_data[grep('*Grazing*', vector_data)]), quiet = T)
+# allotments <- st_read(
+#   file.path(p2carto, vector_data[grep('*Grazing*', vector_data)]), quiet = T)
 
 administrative_boundaries <- st_read(
   file.path(p2carto, vector_data[grep('*admu_', vector_data)]), quiet = T)
@@ -35,8 +35,8 @@ mask <- st_read(
 #nm_and_nca <- st_read(
 #  file.path(p2carto, vector_data[grep('*NCA*', vector_data)]), quiet = T)
 
-#streams <- st_read(
-#  file.path(p2carto, vector_data[grep('*NHD_Streams*', vector_data)]), quiet = T)
+streams <- st_read(
+  file.path(p2carto, vector_data[grep('*NHD_Streams*', vector_data)]), quiet = T)
 
 rivers <- st_read(
   file.path(p2carto, vector_data[grep('*NHD_Rivers*', vector_data)]), quiet = T) %>% 
@@ -249,7 +249,7 @@ deNCA <- ggplot() +
                          pad_x = unit(0.1, "in"), pad_y = unit(0.5, "in"),
                          style = north_arrow_minimal) 
 
-deNCA
+
 ggsave(deNCA, path = 'results/maps', device = 'png',
        bg = 'transparent', filename = 'DominguezEscalenteAIMPlots.png',
        dpi = 300, width = 4, height = 6 , units = "in")
@@ -359,7 +359,8 @@ hillshade <- as.data.frame(hill, xy = T)
 streams <- st_crop(streams, bbox)
 rivers <- st_crop(rivers, bbox)
 mask <- st_crop(mask, bbox)
-Pad <- st_crop(padus, bbox)
+Pad <- st_crop(padus, bbox) %>% 
+  filter(!Own_Name %in% c('USBR', 'FWS'))
 
 places <- tigris::places(state = 'CO') %>% 
   vect() %>% 
@@ -368,10 +369,10 @@ places <- tigris::places(state = 'CO') %>%
   st_as_sf() %>% 
   st_point_on_surface() %>% 
   select(NAME) %>% 
-  filter(NAME %in% c('Delta', 'Hotchkiss', 'Cedaredge', 'Paonia', 'Crawford'))
+  filter(NAME %in% c('Delta', 'Hotchkiss', 'Cedaredge', 'Paonia'))
 
 public_lands_pal1 <- public_lands_pal
-names(public_lands_pal1)[11] <- 'Local-State'
+names(public_lands_pal1)[11] <- 'Local'
 plp <- public_lands_pal[c(unique(Pad$Own_Name))]
 plp <- plp[order(names(plp))]
 plp <- plp[!is.na(plp)]
@@ -382,7 +383,9 @@ p1 <- ggplot() +
   scale_fill_gradient(low = "grey50", high = "grey100") +
   guides(fill = 'none') +
   theme_void() +
-  theme(plot.title = element_text(hjust = 0.5),
+  theme(plot.title = element_text(hjust = 1.3),
+        legend.key.size = unit(0.7, 'lines'),
+        plot.margin = unit(c(0,0,-4,0), "lines"),
         legend.title = element_text(hjust = 0.5)) +
   ggnewscale::new_scale_fill() +
   
@@ -403,29 +406,36 @@ p1 <- ggplot() +
                 alpha = 0.75, label.size  = NA) +
   
   annotation_scale(location = "bl", 
-                   pad_x = unit(0.35, "in"), pad_y = unit(0.4, "in"),
+                   pad_x = unit(0.25, "in"), pad_y = unit(0.15, "in"),
                    width_hint = 0.3) +
   annotation_north_arrow(location = "bl", which_north = "true", 
-                         pad_x = unit(0.15, "in"), pad_y = unit(0.65, "in"),
+                         pad_x = unit(0.05, "in"), pad_y = unit(0.35, "in"),
                          style = north_arrow_minimal) 
 
 mleg <- get_legend(
   ggplot() +
   guides(fill = 'none') +
+ #        color=guide_legend(nrow=2, byrow=TRUE)) +
   theme_void() +
-  theme(plot.title = element_text(hjust = 0.5)) +
   ggnewscale::new_scale_fill() +
   
   geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.7, color = NA) +
-  scale_fill_manual('Management', values = plp) +
-  theme(legend.position = 'bottom')
+  scale_fill_manual('Management   ', values = plp) +
+  theme(legend.position = 'bottom', legend.box="vertical", 
+       legend.key.size = unit(0.3, 'cm'), 
+       plot.margin = unit(c(0,0,0,0), "lines"))
 )
 
-plot_grid(p1, mleg, 
-          ncol = 1, rel_heights = c(.85, .15))
+my_cow <- plot_grid(p1, mleg, 
+          ncol = 1, rel_heights = c(.9, .1))
+
+setwd('/media/sagesteppe/ExternalHD/UFO_noxious_weeds')
+save_plot(my_cow, path = 'results/maps', device = 'png',
+       bg = 'transparent', filename = 'NothernFO_weeds.png',
+       dpi = 300,  base_width = 6, units = "in")
 
 #############################################################################
-# Facet wraps of invasive species in other locations throughout the field office
+# Show invasive species in other locations throughout the field office
 
 r_locations <- st_read(file.path(p2carto, 'noxious', 'noxious_all.shp'))
 r_locations <- st_jitter(r_locations, amount = 1500)
@@ -437,6 +447,11 @@ inv <- read.csv(file.path(p2carto, 'noxious', 'Introducted_species_CO.csv')) %>%
 inv <- unique(inv)
 
 bbox <- st_bbox(r_locations)
+bbox <- st_bbox(
+  setNames(c(bbox['xmin'] - 2500, bbox['ymin'] - 2500, bbox['xmax'] + 2500, 
+             bbox['ymax'] + 2500),
+           c('xmin', 'ymin', 'xmax', 'ymax' )) 
+  )
 
 hill <- crop(hill, ext(terra::vect(r_locations)))
 hill <- aggregate(hill, 10)
@@ -444,7 +459,8 @@ hillshade <- as.data.frame(hill, xy = T)
 
 rivers <- st_crop(rivers, bbox)
 mask <- st_crop(mask, bbox)
-Pad <- st_crop(padus, bbox)
+Pad <- st_crop(padus, bbox) %>% 
+  filter(!Own_Name %in% c('LOC', 'JNT', 'TRIB', 'DOD', 'USBR', 'FWS'))
 
 places <- tigris::places(state = 'CO') %>% 
   vect() %>% 
@@ -453,7 +469,7 @@ places <- tigris::places(state = 'CO') %>%
   st_as_sf() %>% 
   st_point_on_surface() %>% 
   select(NAME) %>% 
-  filter(NAME %in% c('Delta', 'Paonia', 'Montrose', 'Nucla'))
+  filter(NAME %in% c('Nucla', 'Cedaredge', 'Montrose', 'Ridgway'))
 
 public_lands_pal1 <- public_lands_pal
 names(public_lands_pal1)[11] <- 'Local-State'
@@ -466,14 +482,15 @@ p1 <- ggplot() +
               interpolate = F)  +
   scale_fill_gradient(low = "grey50", high = "grey100") +
   guides(fill = 'none') +
-  theme_void() +
+  theme_void(base_size = 10) +
   theme(plot.title = element_text(hjust = 0.5),
         legend.title = element_text(hjust = 0.5), 
+        legend.key.size = unit(0.7, 'lines'),
         legend.position = 'bottom', 
-        legend.spacing.y = unit(0.0, 'cm'),
-        legend.spacing.x = unit(0., 'pt'),
-        legend.text = element_text( size = 8,
-          margin = margin(l =-3, unit = "pt"))) +
+        legend.spacing.y = unit(0.1, 'pt'),
+        legend.spacing.x = unit(0.0, 'pt'),
+        legend.text = element_text( size = 6,
+        margin = margin(l =-2, unit = "pt"))) +
   ggnewscale::new_scale_fill() +
     
   geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.7, color = NA) +
@@ -485,22 +502,24 @@ p1 <- ggplot() +
   geom_sf_label(data = places, aes(label = NAME), inherit.aes = F,
                 alpha = 0.45, label.size  = NA) +
   scale_fill_manual('Management', guide = 'none', values = plp) +
-  scale_color_manual('Species', labels=inv, 
+  scale_color_manual('', labels=inv, 
                      values = colorspace::qualitative_hcl(length(inv), palette = "Dark 3")) +
   
   annotation_scale(location = "bl", 
-                   pad_x = unit(0.35, "in"), pad_y = unit(0.4, "in"),
+                   pad_x = unit(0.2, "in"), pad_y = unit(0.15, "in"),
                    width_hint = 0.2) +
   annotation_north_arrow(location = "bl", which_north = "true", 
-                         pad_x = unit(0.15, "in"), pad_y = unit(0.65, "in"),
+                         pad_x = unit(0.05, "in"), pad_y = unit(1.75, "in"),
                          style = north_arrow_minimal) +
   guides(color = guide_legend(byrow = TRUE))
+
     
 mleg <- get_legend(
   ggplot() +
     guides(fill = 'none') +
     theme_void() +
-    theme(plot.title = element_text(hjust = 0.5)) +
+    theme(plot.title = element_text(hjust = 0.5),
+          plot.margin = unit(c(1,1,1,-1), "lines")) +
     ggnewscale::new_scale_fill() +
     
     geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.7, color = NA) +
@@ -508,26 +527,33 @@ mleg <- get_legend(
     theme(legend.position = 'right')
 )
 
+my_cow <- plot_grid(p1, mleg, 
+          ncol = 2, rel_widths = c(.9, .1))
 
-plot_grid(p1, mleg, 
-          ncol = 2, rel_widths = c(.85, .15))
-
+save_plot(my_cow, path = 'results/maps', device = 'png',
+          bg = 'transparent', filename = 'allFO_weeds.png',
+          dpi = 300, base_width = 6, units = "in")
 
 ##################################################################################
 ## Create Plot of Noxious species aggregate index
 
-
 r_locations <- st_read(file.path(p2carto, 'noxious', 'noxious_index.shp'))
 r_locations <- st_jitter(r_locations, amount = 1500)
+bbox <- st_bbox(r_locations)
+bbox <- st_bbox(
+  setNames(c(bbox['xmin'] - 2500, bbox['ymin'] - 2500, bbox['xmax'] + 2500, 
+             bbox['ymax'] + 2500),
+           c('xmin', 'ymin', 'xmax', 'ymax' )) 
+)
 
-hill <- crop(hill, ext_ter)
+hill <- crop(hill,  ext(terra::vect(r_locations)))
 hill <- aggregate(hill, 10)
 hillshade <- as.data.frame(hill, xy = T)
 
 rivers <- st_crop(rivers, bbox)
 mask <- st_crop(mask, bbox)
-Pad <- st_crop(padus, extent) %>% 
-  filter(!Own_Type %in% c('LOC', 'JNT', 'TRIB', 'DOD', '#FFFFB3'))
+Pad <- st_crop(padus, bbox) %>% 
+  filter(!Own_Name %in% c('LOC', 'JNT', 'TRIB', 'DOD', 'USBR', 'FWS'))
 
 public_lands_pal1 <- public_lands_pal
 names(public_lands_pal1)[11] <- 'Local-State'
@@ -535,22 +561,48 @@ plp <- public_lands_pal[c(unique(Pad$Own_Name))]
 plp <- plp[order(names(plp))]
 plp <- plp[!is.na(plp)]
 
-ggplot() +
-  geom_histogram(data = r_locations, aes(y = Index_Prop, fill = ..y..)) + 
-  scale_fill_gradient2(low='green', mid='yellow', high='red', midpoint = 0.5) +
-  theme_bw()
+places <- tigris::places(state = 'CO') %>% 
+  vect() %>% 
+  project(., crs(Pad)) %>% 
+  crop(., ext(Pad)) %>% 
+  st_as_sf() %>% 
+  st_point_on_surface() %>% 
+  select(NAME) %>% 
+  filter(NAME %in% c('Nucla', 'Cedaredge', 'Montrose', 'Ridgway',
+                     'Crawford', 'Delta'))
 
-ggplot() +
+
+p1 <- ggplot() +
+  geom_histogram(data = r_locations, aes(y = Index_Prop, fill = ..y..)) + 
+  scale_y_continuous('Invasive Index', position = "right", expand = c(0,0)) +
+  scale_x_continuous('Plot Count', expand = c(0,0)) +
+  colorspace::scale_fill_continuous_divergingx(
+    name = 'Value', palette = "RdYlGn", 
+    mid = 0.25, rev = T) +
+  theme_bw() +
+  theme(aspect.ratio = 16/4.15, 
+        panel.border = element_blank(),
+        panel.grid = element_blank(),
+        legend.position = 'none',
+        plot.margin = unit(c(0,0,0,-1), "lines"),
+        panel.background = element_rect(fill='transparent'), #transparent panel bg
+        plot.background = element_rect(fill='transparent', color=NA),
+        legend.background = element_rect(fill='transparent'),
+        legend.box.background = element_rect(fill='transparent')
+        )
+
+p2 <- ggplot() +
   geom_raster(data = hillshade, aes(x = x, y = y, fill = lyr1), 
               interpolate = F)  +
   scale_fill_gradient(low = "grey50", high = "grey100") +
   guides(fill = 'none') +
   theme_void() +
-  theme(plot.title = element_text(hjust = 0.5),
+  theme(plot.title = element_text(hjust = 0.65),
         legend.title = element_text(hjust = 0.5), 
         legend.position = 'bottom', 
         legend.spacing.y = unit(0.0, 'cm'),
-        legend.spacing.x = unit(0., 'pt'),
+        legend.spacing.x = unit(0.0, 'pt'),
+        plot.margin = unit(c(1,-2,1,1), "lines"),
         legend.text = element_text( size = 8,
                                     margin = margin(l =-3, unit = "pt"))) +
   ggnewscale::new_scale_fill()  +
@@ -563,14 +615,26 @@ ggplot() +
   
   ggnewscale::new_scale_fill()  +
   geom_sf(data = r_locations, aes(fill = Index_Prop), shape = 23, size = 2) +
-  scale_fill_distiller(palette = "RdYlGn", direction = -1) + 
+  colorspace::scale_fill_continuous_divergingx(palette = "RdYlGn", mid = 0.4, 
+                                               rev = T, guide = 'none') + 
   
+  coord_sf(xlim = c(bbox['xmin'], bbox['xmax']), 
+             ylim = c(bbox['ymin'], bbox['ymax'])) +
+
+  labs(title = 'Invasive Species Index') +
+  geom_sf_label(data = places, aes(label = NAME), inherit.aes = F,
+                alpha = 0.25, label.size  = NA) +
   
-  coord_sf(xlim = c(extent['xmin'], extent['xmax']), 
-             ylim = c(extent['ymin'], extent['ymax']))
-    
-  
-  
-ggplot(Pad) +
-  geom_sf()
-  geom_sf(aes(fill = Index_Prop), shape = 23, size = 2)
+  annotation_scale(location = "bl", 
+                   pad_x = unit(0.2, "in"), pad_y = unit(0.15, "in"),
+                   width_hint = 0.2) +
+  annotation_north_arrow(location = "bl", which_north = "true", 
+                         pad_x = unit(0.05, "in"), pad_y = unit(1.75, "in"),
+                         style = north_arrow_minimal) 
+
+my_cow <- plot_grid(p2, p1,
+          ncol = 2, rel_widths = c(.85, .15))
+
+save_plot(my_cow, path = 'results/maps', device = 'png',
+          bg = 'transparent', filename = 'invasive_index.png',
+          dpi = 300, base_width = 6, units = "in")
