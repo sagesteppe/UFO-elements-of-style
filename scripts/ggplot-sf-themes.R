@@ -32,27 +32,30 @@ padus <- st_read(
 mask <- st_read(
   file.path(p2carto, vector_data[grep('*mask*', vector_data)]), quiet = T)
 
-nm_and_nca <- st_read(
-  file.path(p2carto, vector_data[grep('*NCA*', vector_data)]), quiet = T)
+#nm_and_nca <- st_read(
+#  file.path(p2carto, vector_data[grep('*NCA*', vector_data)]), quiet = T)
 
-streams <- st_read(
-  file.path(p2carto, vector_data[grep('*NHD_Streams*', vector_data)]), quiet = T)
+#streams <- st_read(
+#  file.path(p2carto, vector_data[grep('*NHD_Streams*', vector_data)]), quiet = T)
 
 rivers <- st_read(
   file.path(p2carto, vector_data[grep('*NHD_Rivers*', vector_data)]), quiet = T) %>% 
   st_zm()
 
-tabeguache <- st_read(
-  file.path(p2carto, vector_data[grep('*Tabeguache*', vector_data)]), quiet = T)
+#tabeguache <- st_read(
+#  file.path(p2carto, vector_data[grep('*Tabeguache*', vector_data)]), quiet = T)
 
-wa <- st_read(
-  file.path(p2carto, vector_data[grep('*unofficial*', vector_data)]), quiet = T)
+#wa <- st_read(
+#  file.path(p2carto, vector_data[grep('*unofficial*', vector_data)]), quiet = T)
 
-wsa <- st_read(
-  file.path(p2carto, vector_data[grep('*WSA*', vector_data)]), quiet = T)
+#wsa <- st_read(
+#  file.path(p2carto, vector_data[grep('*WSA*', vector_data)]), quiet = T)
 
-extent <- filter(administrative_boundaries, FIELD_O == 'UNCOMPAHGRE') %>%
+bbox <- filter(administrative_boundaries, FIELD_O == 'UNCOMPAHGRE') %>%
   st_bbox()
+
+ext_ter <- filter(administrative_boundaries, FIELD_O == 'UNCOMPAHGRE') %>%
+  terra::vect() |> ext()
 
 # raster data
 
@@ -508,3 +511,66 @@ mleg <- get_legend(
 
 plot_grid(p1, mleg, 
           ncol = 2, rel_widths = c(.85, .15))
+
+
+##################################################################################
+## Create Plot of Noxious species aggregate index
+
+
+r_locations <- st_read(file.path(p2carto, 'noxious', 'noxious_index.shp'))
+r_locations <- st_jitter(r_locations, amount = 1500)
+
+hill <- crop(hill, ext_ter)
+hill <- aggregate(hill, 10)
+hillshade <- as.data.frame(hill, xy = T)
+
+rivers <- st_crop(rivers, bbox)
+mask <- st_crop(mask, bbox)
+Pad <- st_crop(padus, extent) %>% 
+  filter(!Own_Type %in% c('LOC', 'JNT', 'TRIB', 'DOD', '#FFFFB3'))
+
+public_lands_pal1 <- public_lands_pal
+names(public_lands_pal1)[11] <- 'Local-State'
+plp <- public_lands_pal[c(unique(Pad$Own_Name))]
+plp <- plp[order(names(plp))]
+plp <- plp[!is.na(plp)]
+
+ggplot() +
+  geom_histogram(data = r_locations, aes(y = Index_Prop, fill = ..y..)) + 
+  scale_fill_gradient2(low='green', mid='yellow', high='red', midpoint = 0.5) +
+  theme_bw()
+
+ggplot() +
+  geom_raster(data = hillshade, aes(x = x, y = y, fill = lyr1), 
+              interpolate = F)  +
+  scale_fill_gradient(low = "grey50", high = "grey100") +
+  guides(fill = 'none') +
+  theme_void() +
+  theme(plot.title = element_text(hjust = 0.5),
+        legend.title = element_text(hjust = 0.5), 
+        legend.position = 'bottom', 
+        legend.spacing.y = unit(0.0, 'cm'),
+        legend.spacing.x = unit(0., 'pt'),
+        legend.text = element_text( size = 8,
+                                    margin = margin(l =-3, unit = "pt"))) +
+  ggnewscale::new_scale_fill()  +
+ 
+  geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.7, color = NA) +
+  scale_fill_manual('Management', values = plp) +
+  
+  geom_sf(data = rivers, alpha = 0.5, color = 'blue') +
+  geom_sf(data = mask, color = 'white', alpha = 0.7, lwd = 0)  +
+  
+  ggnewscale::new_scale_fill()  +
+  geom_sf(data = r_locations, aes(fill = Index_Prop), shape = 23, size = 2) +
+  scale_fill_distiller(palette = "RdYlGn", direction = -1) + 
+  
+  
+  coord_sf(xlim = c(extent['xmin'], extent['xmax']), 
+             ylim = c(extent['ymin'], extent['ymax']))
+    
+  
+  
+ggplot(Pad) +
+  geom_sf()
+  geom_sf(aes(fill = Index_Prop), shape = 23, size = 2)
