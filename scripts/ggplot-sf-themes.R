@@ -414,16 +414,17 @@ p1 <- ggplot() +
 
 mleg <- get_legend(
   ggplot() +
-  guides(fill = 'none') +
- #        color=guide_legend(nrow=2, byrow=TRUE)) +
-  theme_void() +
-  ggnewscale::new_scale_fill() +
-  
-  geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.7, color = NA) +
-  scale_fill_manual('Management   ', values = plp) +
-  theme(legend.position = 'bottom', legend.box="vertical", 
-       legend.key.size = unit(0.3, 'cm'), 
-       plot.margin = unit(c(0,0,0,0), "lines"))
+    guides(fill = 'none') +
+    theme_void() +
+    ggnewscale::new_scale_fill() +
+    
+    geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.7, color = NA) +
+    scale_fill_manual('Management   ', values = plp) +
+    theme(legend.position = 'bottom', legend.box="vertical", 
+          legend.title = element_text(size = 8),
+          legend.key.size = unit(0.3, 'cm'), 
+          legend.text = element_text(size = 6),
+          plot.margin = unit(c(0,0,0,0), "lines"))
 )
 
 my_cow <- plot_grid(p1, mleg, 
@@ -483,14 +484,15 @@ p1 <- ggplot() +
   scale_fill_gradient(low = "grey50", high = "grey100") +
   guides(fill = 'none') +
   theme_void(base_size = 10) +
-  theme(plot.title = element_text(hjust = 0.5),
-        legend.title = element_text(hjust = 0.5), 
+  theme(plot.title = element_text(hjust = 0.5, size = 12),
+        legend.title = element_text(hjust = 0.5, size = 12), 
         legend.key.size = unit(0.7, 'lines'),
-        legend.position = 'bottom', 
+        legend.position = 'right', 
         legend.spacing.y = unit(0.1, 'pt'),
         legend.spacing.x = unit(0.0, 'pt'),
+        plot.margin = unit(c(0,-2,0,0), "lines"),
         legend.text = element_text( size = 6,
-        margin = margin(l =-2, unit = "pt"))) +
+        margin = margin(l = 0, unit = "pt"))) +
   ggnewscale::new_scale_fill() +
     
   geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.7, color = NA) +
@@ -498,41 +500,43 @@ p1 <- ggplot() +
   geom_sf(data = mask, color = 'white', alpha = 0.7, lwd = 0)  +
   geom_sf(data = r_locations, aes(color = SYMBOL)) + 
 
-  labs(title = 'Invasive Species in the Field Office') +
+  labs(title = 'Invasive Species') +
   geom_sf_label(data = places, aes(label = NAME), inherit.aes = F,
                 alpha = 0.45, label.size  = NA) +
   scale_fill_manual('Management', guide = 'none', values = plp) +
-  scale_color_manual('', labels=inv, 
+  scale_color_manual('', 
                      values = colorspace::qualitative_hcl(length(inv), palette = "Dark 3")) +
   
   annotation_scale(location = "bl", 
                    pad_x = unit(0.2, "in"), pad_y = unit(0.15, "in"),
                    width_hint = 0.2) +
   annotation_north_arrow(location = "bl", which_north = "true", 
-                         pad_x = unit(0.05, "in"), pad_y = unit(1.75, "in"),
+                         pad_x = unit(0.05, "in"), pad_y = unit(1.5, "in"),
                          style = north_arrow_minimal) +
   guides(color = guide_legend(byrow = TRUE))
 
-    
+
 mleg <- get_legend(
   ggplot() +
     guides(fill = 'none') +
     theme_void() +
-    theme(plot.title = element_text(hjust = 0.5),
-          plot.margin = unit(c(1,1,1,-1), "lines")) +
     ggnewscale::new_scale_fill() +
     
     geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.7, color = NA) +
-    scale_fill_manual('Management', values = plp) +
-    theme(legend.position = 'right')
+    scale_fill_manual('Management   ', values = plp) +
+    theme(legend.position = 'bottom', legend.box="vertical", 
+          legend.title = element_text(size = 8),
+          legend.key.size = unit(0.3, 'cm'), 
+          legend.text = element_text(size = 6),
+          plot.margin = unit(c(0,0,0,0), "lines"))
 )
 
 my_cow <- plot_grid(p1, mleg, 
-          ncol = 2, rel_widths = c(.9, .1))
+                    ncol = 1, rel_heights = c(.9, .1))
 
-save_plot(my_cow, path = 'results/maps', device = 'png',
+ggsave(my_cow, path = 'results/maps', device = 'png',
           bg = 'transparent', filename = 'allFO_weeds.png',
-          dpi = 300, base_width = 6, units = "in")
+          dpi = 300, width = 6, units = "in")
 
 ##################################################################################
 ## Create Plot of Noxious species aggregate index
@@ -569,8 +573,7 @@ places <- tigris::places(state = 'CO') %>%
   st_point_on_surface() %>% 
   select(NAME) %>% 
   filter(NAME %in% c('Nucla', 'Cedaredge', 'Montrose', 'Ridgway',
-                     'Crawford', 'Delta'))
-
+                     'Crawford'))
 
 p1 <- ggplot() +
   geom_histogram(data = r_locations, aes(y = Index_Prop, fill = ..y..)) + 
@@ -579,12 +582,12 @@ p1 <- ggplot() +
   colorspace::scale_fill_continuous_divergingx(
     name = 'Value', palette = "RdYlGn", 
     mid = 0.25, rev = T) +
-  theme_bw() +
+  theme_bw(base_size = 10) +
   theme(aspect.ratio = 16/4.15, 
         panel.border = element_blank(),
         panel.grid = element_blank(),
         legend.position = 'none',
-        plot.margin = unit(c(0,0,0,-1), "lines"),
+        plot.margin = unit(c(0,0,0,-2), "lines"),
         panel.background = element_rect(fill='transparent'), #transparent panel bg
         plot.background = element_rect(fill='transparent', color=NA),
         legend.background = element_rect(fill='transparent'),
@@ -596,15 +599,16 @@ p2 <- ggplot() +
               interpolate = F)  +
   scale_fill_gradient(low = "grey50", high = "grey100") +
   guides(fill = 'none') +
-  theme_void() +
+  theme_void(base_size = 9) +
   theme(plot.title = element_text(hjust = 0.65),
-        legend.title = element_text(hjust = 0.5), 
+        legend.title = element_text(hjust = 0.5, size = 8), 
         legend.position = 'bottom', 
-        legend.spacing.y = unit(0.0, 'cm'),
-        legend.spacing.x = unit(0.0, 'pt'),
-        plot.margin = unit(c(1,-2,1,1), "lines"),
-        legend.text = element_text( size = 8,
-                                    margin = margin(l =-3, unit = "pt"))) +
+        legend.key.size = unit(0.3, 'cm'), 
+        legend.spacing.y = unit(0.2, 'pt'),
+        legend.spacing.x = unit(0.2, 'pt'),
+        plot.margin = unit(c(0,-2.5,0,0), "lines"),
+        legend.text = element_text(size = 6,
+                                    margin = margin(l = 0, unit = "pt"))) +
   ggnewscale::new_scale_fill()  +
  
   geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.7, color = NA) +
@@ -632,8 +636,8 @@ p2 <- ggplot() +
                          pad_x = unit(0.05, "in"), pad_y = unit(1.75, "in"),
                          style = north_arrow_minimal) 
 
-my_cow <- plot_grid(p2, p1,
-          ncol = 2, rel_widths = c(.85, .15))
+my_cow <- plot_grid(p2, p1, rel_heights = c(1,1),
+          ncol = 2, rel_widths = c(.87, .13))
 
 save_plot(my_cow, path = 'results/maps', device = 'png',
           bg = 'transparent', filename = 'invasive_index.png',
