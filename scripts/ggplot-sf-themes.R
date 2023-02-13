@@ -369,7 +369,7 @@ places <- tigris::places(state = 'CO') %>%
   st_as_sf() %>% 
   st_point_on_surface() %>% 
   select(NAME) %>% 
-  filter(NAME %in% c('Delta', 'Hotchkiss', 'Cedaredge', 'Paonia'))
+  filter(NAME %in% c('Delta', 'Hotchkiss', 'Cedaredge', 'Paonia', 'Crawford'))
 
 public_lands_pal1 <- public_lands_pal
 names(public_lands_pal1)[11] <- 'Local'
@@ -505,13 +505,13 @@ p1 <- ggplot() +
                 alpha = 0.45, label.size  = NA) +
   scale_fill_manual('Management', guide = 'none', values = plp) +
   scale_color_manual('', 
-                     values = colorspace::qualitative_hcl(length(inv), palette = "Dark 3")) +
+                     values = colorspace::qualitative_hcl(length(inv) + 1, palette = "Dark 3")) +
   
   annotation_scale(location = "bl", 
                    pad_x = unit(0.2, "in"), pad_y = unit(0.15, "in"),
                    width_hint = 0.2) +
   annotation_north_arrow(location = "bl", which_north = "true", 
-                         pad_x = unit(0.05, "in"), pad_y = unit(1.5, "in"),
+                         pad_x = unit(0.04, "in"), pad_y = unit(2.0, "in"),
                          style = north_arrow_minimal) +
   guides(color = guide_legend(byrow = TRUE))
 
@@ -530,6 +530,7 @@ mleg <- get_legend(
           legend.text = element_text(size = 6),
           plot.margin = unit(c(0,0,0,0), "lines"))
 )
+
 
 my_cow <- plot_grid(p1, mleg, 
                     ncol = 1, rel_heights = c(.9, .1))
@@ -576,7 +577,7 @@ places <- tigris::places(state = 'CO') %>%
                      'Crawford'))
 
 p1 <- ggplot() +
-  geom_histogram(data = r_locations, aes(y = Index_Prop, fill = ..y..)) + 
+  geom_histogram(data = r_locations, aes(y = Indx_Pr, fill = ..y..)) + 
   scale_y_continuous('Invasive Index', position = "right", expand = c(0,0)) +
   scale_x_continuous('Plot Count', expand = c(0,0)) +
   colorspace::scale_fill_continuous_divergingx(
@@ -618,7 +619,7 @@ p2 <- ggplot() +
   geom_sf(data = mask, color = 'white', alpha = 0.7, lwd = 0)  +
   
   ggnewscale::new_scale_fill()  +
-  geom_sf(data = r_locations, aes(fill = Index_Prop), shape = 23, size = 2) +
+  geom_sf(data = r_locations, aes(fill = Indx_Pr), shape = 23, size = 2) +
   colorspace::scale_fill_continuous_divergingx(palette = "RdYlGn", mid = 0.4, 
                                                rev = T, guide = 'none') + 
   
@@ -633,7 +634,7 @@ p2 <- ggplot() +
                    pad_x = unit(0.2, "in"), pad_y = unit(0.15, "in"),
                    width_hint = 0.2) +
   annotation_north_arrow(location = "bl", which_north = "true", 
-                         pad_x = unit(0.05, "in"), pad_y = unit(1.75, "in"),
+                         pad_x = unit(0.05, "in"), pad_y = unit(2.25, "in"),
                          style = north_arrow_minimal) 
 
 my_cow <- plot_grid(p2, p1, rel_heights = c(1,1),
