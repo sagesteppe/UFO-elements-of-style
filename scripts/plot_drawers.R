@@ -14,6 +14,7 @@
 #' plot(iris_box) + labs(title = 'Comparision of Sepal Length in Iris Species') 
 #' @export 
 #' @seealso theme_boxplot
+
 boxplot_drawer <- function(df, response, col_pal, group){
   
   term <- as.formula(paste(rlang::enexpr(response), ' ~ ', dplyr::enexpr(group)))
@@ -26,7 +27,8 @@ boxplot_drawer <- function(df, response, col_pal, group){
     pull(groups) %>% 
     map(., as.character)
   
-  min_v <- dplyr::summarise(df, mean_mpg = floor(min(!!response))) |> pull()
+  min_v <- dplyr::summarise(df, mean_mpg = floor(min(!!response))) |>
+    pull() |> min()
   
   sample_sizes <- df %>% 
     dplyr::group_by(!!group) %>%  
@@ -41,20 +43,21 @@ boxplot_drawer <- function(df, response, col_pal, group){
     
     geom_text(data = sample_sizes,
               aes(!!group, Inf, label = n), color = 'black', 
-              vjust = "inward", size = 2, 
+              vjust = "inward", size = 4, 
               y = min_v * 0.95) +
     ggpubr::stat_compare_means(comparisons = my_comparisons, 
-                       aes(label = ..p.signif..),
-                       tip.length = 0, vjust = 0.25, size = 2) +
-    ggpubr::stat_compare_means(label.y = min_v * 0.85, size = 2)  +
+                               aes(label = ..p.signif..),
+                               tip.length = 0, vjust = 0.25, size = 4) +
+    ggpubr::stat_compare_means(label.y = min_v * 2, size = 4)  +
     
     theme_boxplot() +
-    
+    expand_limits(y= min_v) +
     scale_colour_manual(values = col_pal) +
     theme(legend.position = 'none')
   
   return(ufo_boxplot)
 }
+
 
 
 #strata_pal_test <- c("setosa" = "#4A5A28", "versicolor" = "#ADB1B9", "virginica" = "#CEB88E")
