@@ -643,3 +643,98 @@ my_cow <- plot_grid(p2, p1, rel_heights = c(1,1),
 save_plot(my_cow, path = 'results/maps', device = 'png',
           bg = 'transparent', filename = 'invasive_index.png',
           dpi = 300, base_width = 6, units = "in")
+
+
+
+
+################################################################################
+################     PLOT FLORISTIC QUALITY INDEX PREDICTIONS     ##############  
+################################################################################
+
+p2pd <- '/media/sagesteppe/ExternalHD/UFO_Plant_Diversity/results/'
+fqi_plots <- st_read(
+  file.path(p2pd, 'FQI_values.shp') )
+
+fqi_prediction <- rast(
+  file.path(p2pd, 'predicted_FQI.tif')
+)
+
+fqi_prediction <- crop(fqi_prediction, ext(vect(fqi_plots)))
+fqi_pred_df <- as.data.frame(fqi_prediction, xy = T)
+
+hill <- crop(hill,  ext(terra::vect(fqi_plots)))
+hill <- aggregate(hill, 10)
+hillshade <- as.data.frame(hill, xy = T)
+
+bbox <- st_bbox(fqi_plots)
+bbox <- st_bbox(
+  setNames(c(bbox['xmin'] - 2500, bbox['ymin'] - 2500, bbox['xmax'] + 2500, 
+             bbox['ymax'] + 2500),
+           c('xmin', 'ymin', 'xmax', 'ymax' )) 
+)
+
+
+rivers <- st_crop(rivers, bbox)
+mask <- st_crop(mask, bbox)
+
+
+places <- tigris::places(state = 'CO') %>% 
+  vect() %>% 
+  project(., crs(fqi_prediction)) %>% 
+  crop(., ext(fqi_prediction)) %>% 
+  st_as_sf() %>% 
+  st_point_on_surface() %>% 
+  dplyr::select(NAME) %>% 
+  filter(NAME %in% c('Nucla', 'Cedaredge', 'Montrose', 'Ridgway',
+                     'Crawford'))
+
+
+ggplot() +
+  geom_raster(data = hillshade, aes(x = x, y = y, fill = lyr1), 
+              interpolate = F)  +
+  scale_fill_gradient(low = "grey50", high = "grey100") +
+  guides(fill = 'none') +
+  theme_void(base_size = 9) +
+  theme(plot.title = element_text(hjust = 0.65),
+        legend.title = element_text(hjust = 0.5, size = 8), 
+        legend.position = 'bottom', 
+        legend.key.size = unit(0.3, 'cm'), 
+        legend.spacing.y = unit(0.2, 'pt'),
+        legend.spacing.x = unit(0.2, 'pt'),
+        plot.margin = unit(c(0,-2.5,0,0), "lines"),
+        legend.text = element_text(size = 6,
+                                   margin = margin(l = 0, unit = "pt"))) +
+  ggnewscale::new_scale_fill() +
+  
+  geom_raster(data = fqi_pred_df, aes(x = x, y = y, fill = mean), 
+              interpolate = F) +
+
+  scale_fill_viridis_c('Mean C', option = "C", direction = -1, 
+                       limits = c(1, 7) ) +
+  ggnewscale::new_scale_fill() +
+  
+  geom_point(data = fqi_plots, aes(fill = mcoc_r, size = fqi_r, geometry = geometry),
+              stat = "sf_coordinates", shape = 21) +
+  scale_fill_viridis_c('Mean C', option = "C", alpha = 0.7, direction = -1, 
+                       limits = c(1,7),  guide = "none") +
+  scale_size_binned('FQI') +
+  theme_void() +
+  theme(legend.position = "right")  +
+  geom_sf(data = rivers, alpha = 0.5, color = 'blue') +
+  
+  
+  coord_sf(xlim = c(bbox['xmin'], bbox['xmax']), 
+           ylim = c(bbox['ymin'], bbox['ymax'])) +
+  
+  labs(title = 'Invasive Species Index') +
+  geom_sf_label(data = places, aes(label = NAME), inherit.aes = F,
+                alpha = 0.5, label.size  = NA) +
+  
+  annotation_scale(location = "bl", 
+                   pad_x = unit(0.2, "in"), pad_y = unit(0.15, "in"),
+                   width_hint = 0.2) +
+  annotation_north_arrow(location = "bl", which_north = "true", 
+                         pad_x = unit(0.05, "in"), pad_y = unit(0.25, "in"),
+                         style = north_arrow_minimal) 
+
+
