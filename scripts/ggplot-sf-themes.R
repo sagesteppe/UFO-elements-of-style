@@ -659,10 +659,15 @@ fqi_prediction <- rast(
   file.path(p2pd, 'predicted_FQI.tif')
 )
 
-fqi_prediction <- crop(fqi_prediction, ext(vect(fqi_plots)))
-fqi_pred_df <- as.data.frame(fqi_prediction, xy = T)
+fqi_no_xy <- rast(
+  file.path(p2pd, 'predicted_FQI_noXY.tif')
+)
 
-hill <- crop(hill,  ext(terra::vect(fqi_plots)))
+
+fqi_noXY_prediction <- crop(fqi_no_xy, ext(mask))
+fqi_pred_df_noXY <- as.data.frame(fqi_noXY_prediction, xy = T)
+
+hill <- crop(hill,  ext(mask))
 hill <- aggregate(hill, 10)
 hillshade <- as.data.frame(hill, xy = T)
 
@@ -673,6 +678,10 @@ bbox <- st_bbox(
            c('xmin', 'ymin', 'xmax', 'ymax' )) 
 )
 
+
+
+fqi_noXY_prediction <- crop(fqi_no_xy, bbox)
+fqi_pred_df_noXY <- as.data.frame(fqi_noXY_prediction, xy = T)
 
 rivers <- st_crop(rivers, bbox)
 mask <- st_crop(mask, bbox)
@@ -686,55 +695,85 @@ places <- tigris::places(state = 'CO') %>%
   st_point_on_surface() %>% 
   dplyr::select(NAME) %>% 
   filter(NAME %in% c('Nucla', 'Cedaredge', 'Montrose', 'Ridgway',
-                     'Crawford'))
+                     'Crawford', 'Paonia', 'Olathe'))
+
+CO_roads <- tigris::roads(state = 'CO',
+                          county = c('Montrose', 'Delta', 'Ouray', 
+                                     'San Miguel', 'Mesa')) %>% 
+  filter(RTTYP %in% c('U', 'S')) %>% 
+  st_transform(st_crs(fqi_prediction)) %>% 
+  st_crop(., bbox) %>% 
+  st_simplify() %>% 
+  dplyr::select(geometry) %>% 
+  st_cast('LINESTRING') %>% 
+  st_as_sfc()
+
+non_ufo_blm <-  st_crop(padus, bbox) %>% 
+  filter(Own_Name %in% c( 'BLM')) %>% 
+  st_intersection(., mask)
+
+Pad <- st_crop(padus, bbox) %>% 
+  filter(!Own_Name %in% c('LOC', 'JNT', 'TRIB', 'DOD', 'USBR', 'FWS', 'BLM')) %>% 
+  bind_rows(., non_ufo_blm)
+
+public_lands_pal1 <- public_lands_pal
+names(public_lands_pal1)[11] <- 'Local-State'
+plp <- public_lands_pal[c(unique(Pad$Own_Name))]
+plp <- plp[order(names(plp))]
+plp <- plp[!is.na(plp)]
 
 
-ggplot() +
+fqi <- ggplot() +
+  
   geom_raster(data = hillshade, aes(x = x, y = y, fill = lyr1), 
               interpolate = F)  +
   scale_fill_gradient(low = "grey50", high = "grey100") +
   guides(fill = 'none') +
   theme_void(base_size = 9) +
-  theme(plot.title = element_text(hjust = 0.65),
+  theme(plot.title = element_text(hjust = 0.5),
         legend.title = element_text(hjust = 0.5, size = 8), 
         legend.position = 'bottom', 
-        legend.key.size = unit(0.3, 'cm'), 
-        legend.spacing.y = unit(0.2, 'pt'),
-        legend.spacing.x = unit(0.2, 'pt'),
-        plot.margin = unit(c(0,-2.5,0,0), "lines"),
+        legend.key.size = unit(0.5, 'cm'), 
+        legend.spacing.y = unit(2, 'pt'),
+        legend.spacing.x = unit(5, 'pt'),
         legend.text = element_text(size = 6,
                                    margin = margin(l = 0, unit = "pt"))) +
   ggnewscale::new_scale_fill() +
   
-  geom_raster(data = fqi_pred_df, aes(x = x, y = y, fill = mean), 
+  geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.7, color = NA) +
+  scale_fill_manual('Management', values = plp) +
+  ggnewscale::new_scale_fill() +
+  
+  geom_raster(data = fqi_pred_df_noXY, aes(x = x, y = y, fill = sum), 
               interpolate = F) +
 
   scale_fill_viridis_c('Mean C', option = "C", direction = -1, 
                        limits = c(1, 7) ) +
   ggnewscale::new_scale_fill() +
   
-  geom_point(data = fqi_plots, aes(fill = mcoc_r, size = fqi_r, geometry = geometry),
+  geom_point(data = fqi_plots, aes(fill = mcoc_r, size = fqi_r, 
+                                   geometry = geometry),
               stat = "sf_coordinates", shape = 21) +
   scale_fill_viridis_c('Mean C', option = "C", alpha = 0.7, direction = -1, 
                        limits = c(1,7),  guide = "none") +
   scale_size_binned('FQI') +
-  theme_void() +
-  theme(legend.position = "right")  +
   geom_sf(data = rivers, alpha = 0.5, color = 'blue') +
-  
+  geom_sf(data = CO_roads, alpha = 0.5, color = 'black') +
   
   coord_sf(xlim = c(bbox['xmin'], bbox['xmax']), 
            ylim = c(bbox['ymin'], bbox['ymax'])) +
   
-  labs(title = 'Invasive Species Index') +
+  labs(title = 'Measured and Predicted Floristic Quality') +
   geom_sf_label(data = places, aes(label = NAME), inherit.aes = F,
                 alpha = 0.5, label.size  = NA) +
   
   annotation_scale(location = "bl", 
-                   pad_x = unit(0.2, "in"), pad_y = unit(0.15, "in"),
+                   pad_x = unit(0.4, "in"), pad_y = unit(0.3, "in"),
                    width_hint = 0.2) +
   annotation_north_arrow(location = "bl", which_north = "true", 
-                         pad_x = unit(0.05, "in"), pad_y = unit(0.25, "in"),
+                         pad_x = unit(0.3, "in"), pad_y = unit(0.5, "in"),
                          style = north_arrow_minimal) 
 
-
+ggsave(fqi, path = 'results/maps', device = 'png',
+       bg = 'transparent', filename = 'FQI.png',
+       dpi = 300, width = 6, height = 9, units = "in")
