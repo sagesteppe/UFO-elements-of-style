@@ -651,25 +651,18 @@ save_plot(my_cow, path = 'results/maps', device = 'png',
 ################     PLOT FLORISTIC QUALITY INDEX PREDICTIONS     ##############  
 ################################################################################
 
+
+setwd('/media/sagesteppe/ExternalHD/UFO_elements_of_style')
+
 p2pd <- '/media/sagesteppe/ExternalHD/UFO_Plant_Diversity/results/'
 fqi_plots <- st_read(
   file.path(p2pd, 'FQI_values.shp') )
 
-fqi_prediction <- rast(
-  file.path(p2pd, 'predicted_FQI.tif')
-)
 
 fqi_no_xy <- rast(
   file.path(p2pd, 'predicted_FQI_noXY.tif')
 )
 
-
-fqi_noXY_prediction <- crop(fqi_no_xy, ext(mask))
-fqi_pred_df_noXY <- as.data.frame(fqi_noXY_prediction, xy = T)
-
-hill <- crop(hill,  ext(mask))
-hill <- aggregate(hill, 10)
-hillshade <- as.data.frame(hill, xy = T)
 
 bbox <- st_bbox(fqi_plots)
 bbox <- st_bbox(
@@ -678,14 +671,15 @@ bbox <- st_bbox(
            c('xmin', 'ymin', 'xmax', 'ymax' )) 
 )
 
-
+hill <- crop(hill,  bbox)
+hill <- aggregate(hill, 10)
+hillshade <- as.data.frame(hill, xy = T)
 
 fqi_noXY_prediction <- crop(fqi_no_xy, bbox)
 fqi_pred_df_noXY <- as.data.frame(fqi_noXY_prediction, xy = T)
 
 rivers <- st_crop(rivers, bbox)
 mask <- st_crop(mask, bbox)
-
 
 places <- tigris::places(state = 'CO') %>% 
   vect() %>% 
@@ -773,7 +767,7 @@ fqi <- ggplot() +
   annotation_north_arrow(location = "bl", which_north = "true", 
                          pad_x = unit(0.3, "in"), pad_y = unit(0.5, "in"),
                          style = north_arrow_minimal) 
-
+fqi
 ggsave(fqi, path = 'results/maps', device = 'png',
        bg = 'transparent', filename = 'FQI.png',
-       dpi = 300, width = 6, height = 9, units = "in")
+       dpi = 300, width = 6, height = 6, units = "in")
