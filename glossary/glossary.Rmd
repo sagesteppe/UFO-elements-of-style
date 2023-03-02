@@ -1,67 +1,71 @@
 ---
 title: "Glossary"
 output:
-  pdf_document
+  pdf_document: default
+header-includes:
+- \usepackage[width=\textwidth]{caption}
+- \usepackage{enumitem}
+- \usepackage{wrapfig}
 ---
+
 \vspace{-1cm}
 
 **Assess, Inventory, and Monitor:** "The objective of the Assessment, Inventory, and Monitoring (AIM) Strategy is to provide a standardized monitoring strategy for assessing natural resource condition and trend on BLM public lands. The AIM Strategy provides quantitative data and tools to guide and justify policy actions, land uses, and adaptive management decisions."
 
-**Annual/Biennial/Perennial** Plants differ in the lengths of their lives, and at which ages they are able to undergo reproductive activity. **Annual** plant species both reproduce and die within their first year of life. **Biennial** plant species tend to grow for one year, and flower and die in their second. **Perennial** plant species grow for two or more years, and oftentimes reproduce multiple times along this period.
+**Annual/Biennial/Perennial:** Plants differ in the lengths of their lives, and at which ages they are able to undergo reproductive activity. **Annual** plant species both reproduce and die within their first year of life. **Biennial** plant species tend to grow for one year, and flower and die in their second. **Perennial** plant species grow for two or more years, and oftentimes reproduce multiple times along this period.
 
 **benchmark:** In this context, a benchmark is an informed objective or goal which to strive towards. These tend to be quantitative, or semi-quantitative, and reflect best scientific opinion and management knowledge regarding the capacity of land.
 
-**categorical** Relating to statistics, objects which are able to be defined as discrete groupings. For example Counties, are discrete categories in the state of Colorado. The attributes of objects which themselves are **continuous** may be recorded in a fashion which makes them **categorical** data. Categorical data often require different statistical approaches than continuous data. 
+**categorical:** Relating to statistics, objects which are able to be defined as discrete groupings. For example Counties, are discrete categories in the state of Colorado. The attributes of objects which themselves are **continuous** may be recorded in a fashion which makes them **categorical** data. Categorical data often require different statistical approaches than continuous data. 
 
-**continuous** Relating to statistics, information which follows a natural gradient, and is collected in a matter reflecting this. For example, the height of a human in feet is categorical, but height in large fractions of an inch are continuous. Continuous data often require different statistical approaches than categorical data. 
+**continuous:** Relating to statistics, information which follows a natural gradient, and is collected in a matter reflecting this. For example, the height of a human in feet is categorical, but height in large fractions of an inch are continuous. Continuous data often require different statistical approaches than categorical data. 
 
-**C3/C4 Grass** Two major photosynthetic pathways exist in grasses. C3 photosynthesis is the main form of photosynthesis in the plant kingdom, and aligns with the Cool-Season Grasses. C4 photosynthesis, present in the warm season grasses, is postulated to be an evolutionary adaption which makes grasses more competitive in moisture limited areas.  
+**C3/C4 Grass:** Two major photosynthetic pathways exist in grasses. C3 photosynthesis is the main form of photosynthesis in the plant kingdom, and aligns with the Cool-Season Grasses. C4 photosynthesis, present in the warm season grasses, is postulated to be an evolutionary adaption which makes grasses more competitive in moisture limited areas.  
 
-**confidence intervals:**
+**confidence intervals:** A range of estimates around a parameter, such as the mean, of a population calculated from the sample. A confidence level of 0.8 should generate results that include the true parameter of the population in 80% of all instances.  
 
 **domain:** An area in space which delimits the spatial extent of an analysis. Usually the domain we used in this study was a square box, buffer 5km from the most extremes edges of the Field Office.
 
-**Ecological Site (Description)** 
+**Ecological Site (Description):** An ecological site **(ES)** is an area of land which is subject to roughly the same environmental factors, e.g. climate & soils, and which produce similar types of vegetation when both undisturbed and when subjected to the same type of disturbance, e.g. by wildfire. The **Description** **(ESD)** contains information regarding this site, and in particular the type of vegetation which it supports. 
 
-**ensemble model:** A single *=statistical model which takes multiple other models as inputs, and creates an average of them. 
+**ensemble model:** A single statistical model which takes multiple other models as inputs, and creates an average of them. 
 
-**feature engineer:** 
+**feature engineer:** The development of new features from existing ones. We use the term here, but we are mostly imputing data into features which are missing them.
 
 **grain:** The resolution of a dataset in both time and space. For example, if you had a rain gauge and checked it every hour of every day in March, you would have precipitation data at an hourly **grain**, and could also transform this to different grains like: **hourly**, **daily**, or a **monthly**. Spatial grains are analogous, and often form the most 'notable' component of a *raster*, i.e. the cell sizes.
 
 **indicator:** A set of features which are known to correlate to with a more challenging to measure metric, and serve as a proxy of it. The **AIM** dataset collects data on many features, which indicate overall site health. 
  
-**inference:** 
-
-**integrity:** 
+**inference:** The utilization of applying statistical approaches and modelling to a sample to make judgement about a **population**.
  
-**invasive (species)** A species which until recent history (e.g. within the holocene), has been restricted to certain major geographic areas, and was introduced to different areas by human activities, and which is **noxious** in this area. 
+**invasive (species):** A species which until recent history (e.g. within the holocene), has been restricted to certain major geographic areas, and was introduced to different areas by human activities, and which is **noxious** in this area. 
 
 **line-point intercept:** A quantitative method for measuring the cover of an object relative to a plane, e.g. the soil surface. A single line, such as a measuring tape, is unrolled and at pre-determined intervals along its length a pin, which emulates a point, is dropped. The presence of features of interest, such as plants and rock fragments, are recorded at each location the pin is dropped. This method is used for many of the AIM indicators.
 
-**noxious (species)** A species which has features making it undesirable in certain contexts. These features generally pertaining to it's competitive exclusion of other species.
+**noxious (species):** A species which has features making it undesirable in certain contexts. These features generally pertaining to it's competitive exclusion of other species.
 
-**parametric:**  
-
-**panel:** 
+**panel:** In statistics this refers to datasets, where the same sample is revisited over time. For example, all of these plots were in the first of several AIM panels, each of which will be 5 years.
 
 **peer-reviewed journals:** These provide the major forum for sharing academic research and ideas. The peer-review process entails sending an article, which an author would like to publish in a journal, to independent experts on the topic who verify that the work meets the standards which the journal requires for publication of work.
 
-**population:**
+**population:** A group of individuals to which statistical *inference* can be made. The population is defined before it is sampled from. 
 
-**raster** A format for transferring geographic data. A raster is, generally, a square grid where each cell depicts the value of an attribute, and is tied to a geographic location. The attributes which are usually stored in a raster are **continuous** such as *elevation*.
+**raster:** A format for transferring geographic data. A raster is, generally, a square grid where each cell depicts the value of an attribute, and is tied to a geographic location. The attributes which are usually stored in a raster are **continuous** such as *elevation*.
 
 **reproductively active:** The period during which a plant is reproducing, i.e. has flower and fruits. Many diagnostic features which are required to identify plant species are found only during this period. 
 
-**sample frame:** 
+\begin{wrapfigure}{r}{0.4\textwidth}
+  \centering
+    \includegraphics[width=0.4\textwidth]{../results/plots/SampleFrameExample.png}
+  \caption{Graphic Illustrating a Target Frame, Sample Frame (the outer dimensions of the box), and which will be sampled as a single Panel.}
+\end{wrapfigure}
 
-**sampling cycle:** 
+**sample frame:** In statistics, the portion of the population of interest which can be sampled. In the Natural Sciences the sample frame may have to preclude areas which are dangerous to sample (high slopes), or very inaccessible (isolated Wilderness Areas).
 
-**target frame:** 
+**target frame:** In statistics, the total population of interest. This population can not always be ascertained, but in our study aligns with the sample frame.
 
-**TerrAdat** A centralized repository for AIM data which has undergone quality control and assurance steps. Also contains statistical summaries of a wide range of **indicators**.
+**TerrAdat:** A centralized repository for AIM data which has undergone quality control and assurance steps. Also contains statistical summaries of a wide range of **indicators**.
 
-**weighted sample design:** 
-
+**weighted sample design:** An approach which applies different probabilities of inclusion to members of the population, hence results in a random sample with more members of certain portions of the population than others. This is often used to provide adequate samples of groups with little representation. 
 
 
