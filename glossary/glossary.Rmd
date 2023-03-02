@@ -11,9 +11,9 @@ output:
 
 **benchmark:** In this context, a benchmark is an informed objective or goal which to strive towards. These tend to be quantitative, or semi-quantitative, and reflect best scientific opinion and management knowledge regarding the capacity of land.
 
-**categorical**
+**categorical** Relating to statistics, objects which are able to be defined as discrete groupings. For example Counties, are discrete categories in the state of Colorado. The attributes of objects which themselves are **continuous** may be recorded in a fashion which makes them **categorical** data. Categorical data often require different statistical approaches than continuous data. 
 
-**continuous**
+**continuous** Relating to statistics, information which follows a natural gradient, and is collected in a matter reflecting this. For example, the height of a human in feet is categorical, but height in large fractions of an inch are continuous. Continuous data often require different statistical approaches than categorical data. 
 
 **C3/C4 Grass** Two major photosynthetic pathways exist in grasses. C3 photosynthesis is the main form of photosynthesis in the plant kingdom, and aligns with the Cool-Season Grasses. C4 photosynthesis, present in the warm season grasses, is postulated to be an evolutionary adaption which makes grasses more competitive in moisture limited areas.  
 
@@ -23,7 +23,7 @@ output:
 
 **Ecological Site (Description)** 
 
-**ensemble model:** 
+**ensemble model:** A single *=statistical model which takes multiple other models as inputs, and creates an average of them. 
 
 **feature engineer:** 
 
