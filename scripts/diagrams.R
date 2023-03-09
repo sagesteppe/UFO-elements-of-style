@@ -35,7 +35,6 @@ rm(d)
 
 
 
-
 sacrifice_zone <- st_point(c(50,50)) %>% 
   st_geometry()  %>% 
   st_as_sf(crs = 26913) %>% 
@@ -97,6 +96,7 @@ spp_rich <- data.frame(
   Label = 'Species Richness'
 ) 
 
+st_area(plot_outer)
 
 ggplot() +
   geom_sf(data = plot_outer, fill = 'beige') +
@@ -122,5 +122,7 @@ ggplot() +
     pad_x = unit(0.3, "in"), pad_y = unit(0.2, "in")
   )
 
+ggsave('../../UFO_AIM_Panel1_Final_Report/graphics/Methods-Plot.png', device = "png")
 
 
+rm(co, sh, heights, lpi, plot_outer, sacrifice_zone, soil_sta, spp_rich, transects)
