@@ -112,7 +112,7 @@ ggplot() +
   scale_fill_manual('Method:', values = co) +
   labs(title = 'Layout of an AIM plot') + 
   theme(plot.title =  element_text(hjust = 0.5), 
-        legend.position = 'bottom') +
+        legend.position = 'bottom', legend.box="vertical") +
   
   geom_label(data = spp_rich, aes(x = x, y = y, label = Label)) +
   scale_colour_manual(name = '', values = 'black', labels = 'Gap Intercept') +
@@ -125,4 +125,4 @@ ggplot() +
 ggsave('../../UFO_AIM_Panel1_Final_Report/graphics/Methods-Plot.png', device = "png")
 
 
-rm(co, sh, heights, lpi, plot_outer, sacrifice_zone, soil_sta, spp_rich, transects)
+rm(co, sh, heights, lpi, plot_outer, sacrifice_zone, soil_stab, spp_rich, transects)
