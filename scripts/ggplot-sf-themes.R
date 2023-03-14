@@ -339,8 +339,9 @@ ggsave(aim_pts, path = 'results/maps', device = 'png',
 
 
 
-################################################################## 
-# Map of NE Portion of the field office for Invasive Species
+################################################################################
+#######       NE Portion of the field office for Invasive Species       ########
+################################################################################
 
 r_locations_ne <- st_read(file.path(p2carto, 'noxious', 'noxious_NE.shp'))
 ne_labels <- c(
@@ -352,6 +353,11 @@ ne_labels <- c(
 bbox <- st_bbox(
   setNames(c(221114.9, 4278752.0,  286377.4, 4311463.6 ),
            c('xmin', 'ymin', 'xmax', 'ymax' )) )
+bbox <- st_bbox(
+  setNames(c(bbox['xmin'] - 2500, bbox['ymin'] - 2500, bbox['xmax'] + 2500, 
+             bbox['ymax'] + 2500),
+           c('xmin', 'ymin', 'xmax', 'ymax' )) 
+)
 
 hill <- crop(hill, terra::ext(terra::vect(st_as_sfc(bbox))))
 hillshade <- as.data.frame(hill, xy = T)
@@ -525,22 +531,25 @@ mleg <- get_legend(
     geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.7, color = NA) +
     scale_fill_manual('Management   ', values = plp) +
     theme(legend.position = 'bottom', legend.box="vertical", 
-          legend.title = element_text(size = 8),
-          legend.key.size = unit(0.3, 'cm'), 
-          legend.text = element_text(size = 6),
-          plot.margin = unit(c(0,0,0,0), "lines"))
+          plot.margin = unit(c(0,-2.5,0,0), "lines"),
+          legend.text = element_text(size = 9,
+                                     margin = margin(l = 1, unit = "pt")))
 )
 
 
 my_cow <- plot_grid(p1, mleg, 
-                    ncol = 1, rel_heights = c(.9, .1))
+                    ncol = 1, rel_heights = c(.85, .15))
 
 ggsave(my_cow, path = 'results/maps', device = 'png',
           bg = 'transparent', filename = 'allFO_weeds.png',
           dpi = 300, width = 6, units = "in")
 
-##################################################################################
-## Create Plot of Noxious species aggregate index
+################################################################################
+#########           Plot  Invasive species aggregate index            ##########
+################################################################################
+
+
+setwd('/media/sagesteppe/ExternalHD/UFO_noxious_weeds')
 
 r_locations <- st_read(file.path(p2carto, 'noxious', 'noxious_index.shp'))
 r_locations <- st_jitter(r_locations, amount = 1500)
@@ -602,14 +611,14 @@ p2 <- ggplot() +
   guides(fill = 'none') +
   theme_void(base_size = 9) +
   theme(plot.title = element_text(hjust = 0.65),
-        legend.title = element_text(hjust = 0.5, size = 8), 
+        legend.title = element_text(hjust = 0.5, size = 12), 
         legend.position = 'bottom', 
-        legend.key.size = unit(0.3, 'cm'), 
-        legend.spacing.y = unit(0.2, 'pt'),
-        legend.spacing.x = unit(0.2, 'pt'),
+        legend.key.size = unit(0.5, 'cm'), 
+        legend.spacing.y = unit(5, 'pt'),
+        legend.spacing.x = unit(5, 'pt'),
         plot.margin = unit(c(0,-2.5,0,0), "lines"),
-        legend.text = element_text(size = 6,
-                                    margin = margin(l = 0, unit = "pt"))) +
+        legend.text = element_text(size = 9,
+                                    margin = margin(l = 1, unit = "pt"))) +
   ggnewscale::new_scale_fill()  +
  
   geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.7, color = NA) +
@@ -643,8 +652,6 @@ my_cow <- plot_grid(p2, p1, rel_heights = c(1,1),
 save_plot(my_cow, path = 'results/maps', device = 'png',
           bg = 'transparent', filename = 'invasive_index.png',
           dpi = 300, base_width = 6, units = "in")
-
-
 
 
 ################################################################################
