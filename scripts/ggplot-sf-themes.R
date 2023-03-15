@@ -8,11 +8,11 @@ library(cowplot)
 p2carto <- '/media/sagesteppe/ExternalHD/UFO_cartography'
 vector_data <- list.files(p2carto, recursive = T, pattern = 'shp$')
 
-# aim <- st_read(
-#  file.path(p2carto, vector_data[grep('*Plots*', vector_data)]), quiet = T)
+aim <- st_read(
+  file.path(p2carto, vector_data[grep('*Plots*', vector_data)]), quiet = T)
 
-# acec <- st_read(
-#  file.path(p2carto, vector_data[grep('*ACEC*', vector_data)]), quiet = T)
+acec <- st_read(
+  file.path(p2carto, vector_data[grep('*ACEC*', vector_data)]), quiet = T)
 
 # allotments <- st_read(
 #   file.path(p2carto, vector_data[grep('*Grazing*', vector_data)]), quiet = T)
@@ -32,8 +32,8 @@ padus <- st_read(
 mask <- st_read(
   file.path(p2carto, vector_data[grep('*mask*', vector_data)]), quiet = T)
 
-#nm_and_nca <- st_read(
-#  file.path(p2carto, vector_data[grep('*NCA*', vector_data)]), quiet = T)
+nm_and_nca <- st_read(
+  file.path(p2carto, vector_data[grep('*NCA*', vector_data)]), quiet = T)
 
 streams <- st_read(
   file.path(p2carto, vector_data[grep('*NHD_Streams*', vector_data)]), quiet = T)
@@ -45,11 +45,11 @@ rivers <- st_read(
 #tabeguache <- st_read(
 #  file.path(p2carto, vector_data[grep('*Tabeguache*', vector_data)]), quiet = T)
 
-#wa <- st_read(
-#  file.path(p2carto, vector_data[grep('*unofficial*', vector_data)]), quiet = T)
+wa <- st_read(
+  file.path(p2carto, vector_data[grep('*unofficial*', vector_data)]), quiet = T)
 
-#wsa <- st_read(
-#  file.path(p2carto, vector_data[grep('*WSA*', vector_data)]), quiet = T)
+wsa <- st_read(
+  file.path(p2carto, vector_data[grep('*WSA*', vector_data)]), quiet = T)
 
 bbox <- filter(administrative_boundaries, FIELD_O == 'UNCOMPAHGRE') %>%
   st_bbox()
@@ -84,7 +84,9 @@ public_lands_pal <- setNames(
     'BLM', 'USFS', 'NPS', 'FWS', 'USBR', 'TRIB', 'DOD', 'OTHF', 'SLB', 'Private', 'Local-State')
 )
 
-# Create Basemaps and Templates for the Gunnison Gorge NCA
+################################################################################
+########          AIM Plots sampled near  Gunnison Gorge NCA           #########
+################################################################################
 
 gg <- filter(nm_and_nca, NLCS_NAME
              =='Gunnison Gorge National Conservation Area') 
@@ -124,7 +126,8 @@ ggNCA <- ggplot() +
   scale_fill_gradient(low = "grey50", high = "grey100") +
   guides(fill = 'none') +
   theme_void() +
-  theme(aspect.ratio=1, plot.title = element_text(hjust = 0.5)) +
+  theme(plot.title = element_text(hjust = 0.5), 
+        legend.title.align=0.5) +
   ggnewscale::new_scale_fill() +
   
   geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.5) +
@@ -139,13 +142,10 @@ ggNCA <- ggplot() +
   
   coord_sf(xlim = c(bbox['xmin'], bbox['xmax']), 
            ylim = c(bbox['ymin'], bbox['ymax'])) +
-  
-  theme_void() +
-  theme(legend.title.align=0.5,
-        title=element_text(hjust = 0.5)) +
+
   
   labs(fill = 'Management', 
-       title = 'AIM Plots sampled near Gunnison Gorge NCA') +
+       title = 'Plots near Gunnison Gorge NCA') +
   scale_fill_manual(values = c(plp1)) +
   scale_color_identity(name = NULL,  breaks = c("darkgreen", "maroon4"),
                        labels = c("NCA", "ACEC"),  guide = "legend") +
@@ -156,22 +156,22 @@ ggNCA <- ggplot() +
     shape = guide_legend(order = 3)) +
   
   annotation_scale(location = "bl", 
-                   pad_x = unit(0.25, "in"), pad_y = unit(0.3, "in"),
+                   pad_x = unit(0.35, "in"), pad_y = unit(0.34, "in"),
                    width_hint = 0.225) +
   annotation_north_arrow(location = "bl", which_north = "true", 
-                         pad_x = unit(0.1, "in"), pad_y = unit(0.5, "in"),
+                         pad_x = unit(0.15, "in"), pad_y = unit(0.55, "in"),
                          style = north_arrow_minimal) 
 
-ggNCA
 setwd('/media/sagesteppe/ExternalHD/UFO_elements_of_style')
 ggsave(ggNCA, path = 'results/maps', device = 'png',
        bg = 'transparent', filename = 'GunnisonGorgeAIMPlots.png',
-       dpi = 300, width = 4, height = 6 , units = "in")
+       dpi = 300,  units = "in")
 
 rm(ggNCA, mask_gg, plp1, plp, gg, hill_gg, extent, bbox, Pad, public_lands_pal1)
 
- # Create Basemaps and Templates for the Dominguez Escalente NCA
-
+################################################################################
+########         AIM plots sampled near Dominguez Escalente NCA        #########
+################################################################################
 de <- filter(nm_and_nca, NLCS_NAME =='Dominguez/Escalante National Conservation Area') 
 extent <- de %>% 
   st_buffer(3218) %>% 
@@ -211,7 +211,7 @@ deNCA <- ggplot() +
   scale_fill_gradient(low = "grey50", high = "grey100") +
   guides(fill = 'none') +
   theme_void() +
-  theme(aspect.ratio=1, plot.title = element_text(hjust = 0.5)) +
+  theme(plot.title = element_text(hjust = 0.5)) +
   ggnewscale::new_scale_fill() +
   
   geom_sf(data = Pad, aes(fill = Own_Name), alpha = 0.5) +
@@ -222,17 +222,13 @@ deNCA <- ggplot() +
   geom_sf(data = acec_rivers, alpha = 0.5, color = 'blue') +
   geom_sf(data = acec_streams, alpha = 0.1, color = 'blue', lty = 'twodash') +
   geom_sf(data = AIM, aes(shape = Dumm), size = 3) +
-  geom_sf(data = mask_de, color = 'white', alpha = 0.7, lwd = 0) +
+  geom_sf(data = mask_de, color = 'white', alpha = 0.5, lwd = 0) +
   geom_sf(data = ADMU, fill = NA, aes(color = 'black'), lwd = 1.0) +
   
   coord_sf(xlim = c(bbox['xmin'], bbox['xmax']), 
            ylim = c(bbox['ymin'], bbox['ymax'])) +
   
-  theme_void() +
-  theme(legend.title.align = 0.5, 
-        title=element_text(hjust = 0.5)) +
-  
-  labs(title = 'AIM Plots sampled near Dominguez-Escalente NCA') +
+  labs(title = 'Plots near Dominguez-Escalente NCA') +
   scale_fill_manual('Management', values = plp1) +
   scale_color_identity(name = NULL,  breaks = c("darkgreen", "maroon4", "black"),
                        labels = c("NCA", "ACEC", "UFO/GJFO"),  guide = "legend") +
@@ -243,16 +239,17 @@ deNCA <- ggplot() +
     shape = guide_legend(order = 3)) +
   
   annotation_scale(location = "bl", 
-                   pad_x = unit(0.25, "in"), pad_y = unit(0.3, "in"),
+                   pad_x = unit(0.5, "in"), pad_y = unit(0.5, "in"),
                    width_hint = 0.225) +
   annotation_north_arrow(location = "bl", which_north = "true", 
-                         pad_x = unit(0.1, "in"), pad_y = unit(0.5, "in"),
+                         pad_x = unit(0.3, "in"), pad_y = unit(0.5, "in"),
                          style = north_arrow_minimal) 
 
 
+setwd('/media/sagesteppe/ExternalHD/UFO_elements_of_style')
 ggsave(deNCA, path = 'results/maps', device = 'png',
        bg = 'transparent', filename = 'DominguezEscalenteAIMPlots.png',
-       dpi = 300, width = 4, height = 6 , units = "in")
+       dpi = 300)
 
 rm(deNCA, de, plp, plp1, public_lands_pal1, hillshade, mask_de, acec_rivers, acec_streams)
 
