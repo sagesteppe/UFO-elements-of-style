@@ -6,13 +6,14 @@ header-includes:
 - \usepackage[width=\textwidth]{caption}
 - \usepackage{enumitem}
 - \usepackage{wrapfig}
+- \usepackage{gobble}
 ---
-
+\pagenumbering{gobble}
 \vspace{-1cm}
 
 **Assess, Inventory, and Monitor:** "The objective of the Assessment, Inventory, and Monitoring (AIM) Strategy is to provide a standardized monitoring strategy for assessing natural resource condition and trend on BLM public lands. The AIM Strategy provides quantitative data and tools to guide and justify policy actions, land uses, and adaptive management decisions."
 
-**Annual/Biennial/Perennial:** Plants differ in the lengths of their lives, and at which ages they are able to undergo reproductive activity. **Annual** plant species both reproduce and die within their first year of life. **Biennial** plant species tend to grow for one year, and flower and die in their second. **Perennial** plant species grow for two or more years, and oftentimes reproduce multiple times along this period.
+**annual/biennial/perennial:** Plants differ in the lengths of their lives, and at which ages they are able to undergo reproductive activity. **Annual** plant species both reproduce and die within their first year of life. **Biennial** plant species tend to grow for one year, and flower and die in their second. **Perennial** plant species grow for two or more years, and oftentimes reproduce multiple times along this period.
 
 **benchmark:** In this context, a benchmark is an informed objective or goal which to strive towards. These tend to be quantitative, or semi-quantitative, and reflect best scientific opinion and management knowledge regarding the capacity of land.
 
@@ -20,7 +21,7 @@ header-includes:
 
 **continuous:** Relating to statistics, information which follows a natural gradient, and is collected in a matter reflecting this. For example, the height of a human in feet is categorical, but height in large fractions of an inch are continuous. Continuous data often require different statistical approaches than categorical data. 
 
-**C3/C4 Grass:** Two major photosynthetic pathways exist in grasses. C3 photosynthesis is the main form of photosynthesis in the plant kingdom, and aligns with the Cool-Season Grasses. C4 photosynthesis, present in the warm season grasses, is postulated to be an evolutionary adaption which makes grasses more competitive in moisture limited areas.  
+**C3/C4 grass:** Two major photosynthetic pathways exist in grasses. C3 photosynthesis is the main form of photosynthesis in the plant kingdom, and aligns with the Cool-Season Grasses. C4 photosynthesis, present in the warm season grasses, is postulated to be an evolutionary adaption which makes grasses more competitive in moisture limited areas.  
 
 **confidence intervals:** A range of estimates around a parameter, such as the mean, of a population calculated from the sample. A confidence level of 0.8 should generate results that include the true parameter of the population in 80% of all instances.  
 
@@ -40,7 +41,7 @@ header-includes:
  
 **invasive (species):** A species which until recent history (e.g. within the holocene), has been restricted to certain major geographic areas, and was introduced to different areas by human activities, and which is **noxious** in this area. 
 
-**line-point intercept:** A quantitative method for measuring the cover of an object relative to a plane, e.g. the soil surface. A single line, such as a measuring tape, is unrolled and at pre-determined intervals along its length a pin, which emulates a point, is dropped. The presence of features of interest, such as plants and rock fragments, are recorded at each location the pin is dropped. This method is used for many of the AIM indicators.
+**Line-Point Intercept:** A quantitative method for measuring the cover of an object relative to a plane, e.g. the soil surface. A single line, such as a measuring tape, is unrolled and at pre-determined intervals along its length a pin, which emulates a point, is dropped. The presence of features of interest, such as plants and rock fragments, are recorded at each location the pin is dropped. This method is used for many of the AIM indicators.
 
 **noxious (species):** A species which has features making it undesirable in certain contexts. These features generally pertaining to it's competitive exclusion of other species.
 

@@ -43,7 +43,7 @@ tabeguache <- st_read(
   file.path(p2carto, vector_data[grep('*Tabeguache*', vector_data)]), quiet = T)
 
 wa <- st_read(
-  file.path(p2carto, vector_data[grep('*unofficial*', vector_data)]), quiet = T)
+  file.path(p2carto, vector_data[grep('*_official*', vector_data)]), quiet = T)
 
 wsa <- st_read(
   file.path(p2carto, vector_data[grep('*WSA*', vector_data)]), quiet = T)
@@ -150,7 +150,8 @@ st_intersection(st_transform(unc_bbox, st_crs(wa)), wa) %>%
   rename(geometry = x) %>% 
   st_set_geometry('geometry') %>% 
   st_write(.,
-           file.path(p2carto, vector_data[grep('*WSA*', vector_data)]), append = F)
+           file.path(p2carto, vector_data[grep('*_official*', vector_data)]), append = F)
+
 
 rm(unc_bbox, padus, nm_and_nca, grouse, administrative_boundaries, acec, wa, aim,
    mlra)
