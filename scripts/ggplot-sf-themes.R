@@ -655,7 +655,6 @@ save_plot(my_cow, path = 'results/maps', device = 'png',
 ################     PLOT FLORISTIC QUALITY INDEX PREDICTIONS     ##############  
 ################################################################################
 
-
 setwd('/media/sagesteppe/ExternalHD/UFO_elements_of_style')
 
 p2pd <- '/media/sagesteppe/ExternalHD/UFO_Plant_Diversity/results/'
@@ -745,9 +744,6 @@ fqi_plot <- ggplot() +
   geom_sf(data = padus, aes(fill = Own_Name), alpha = 0.7, color = NA) +
   scale_fill_manual('Land Owner', values = plp) +
   ggnewscale::new_scale_fill() +
-  
- # geom_raster(data = fqi_pred_df_noXY, aes(x = x, y = y, fill = sum), 
-#              interpolate = F) +
 
   geom_sf(data = rivers, alpha = 0.5, color = 'blue') +
   geom_sf(data = CO_roads, alpha = 0.5, color = 'black') +
@@ -830,7 +826,6 @@ fqi_pred <- ggplot() +
 ggsave(fqi_pred, path = 'results/maps', device = 'png',
        bg = 'transparent', filename = 'FQI-plots.png',
        dpi = 300, width = 6, height = 6, units = "in")
-
 
 rm(fqi_pred, Pad, plp, places, plp, non_ufo_blm, padus, p2carto, rivers, public_lands_pal,
   bbox, CO_roads, fqi_no_xy, fqi_noXY_prediction, ext_ter, mask, p2pd, hill, fqi_plots,

@@ -24,6 +24,9 @@ administrative_boundaries <- st_read(
 #administrative_boundaries_utah <- st_read(
 #  file.path(p2carto, vector_data[grep('*admut', vector_data)]), quiet = T)
 
+blm_surface <- st_read(
+  file.path(p2carto, vector_data[grep('*Surface*', vector_data)]), quiet = T)
+
 grouse <- st_read(
   file.path(p2carto, vector_data[grep('*Grouse*', vector_data)]), quiet = T)
 
@@ -47,6 +50,7 @@ wa <- st_read(
 
 wsa <- st_read(
   file.path(p2carto, vector_data[grep('*WSA*', vector_data)]), quiet = T)
+
 
 
 # subset datasets for FO
@@ -84,6 +88,17 @@ st_intersection(unc_bbox, administrative_boundaries) %>%
   st_set_geometry('geometry') %>% 
   st_write(.,
            file.path(p2carto, vector_data[grep('*admu*', vector_data)]), 
+           append = F)
+
+ufo_surface <- blm_surface %>%
+  filter(adm_code == 'BLM') %>% 
+  st_intersection(unc_bbox, .) %>% 
+  st_intersection(filter(administrative_boundaries, FIELD_O == 'UNCOMPAHGRE'),
+          .) %>% 
+  st_collection_extract('POLYGON') %>% 
+  select(OFFICE = FIELD_O) %>% 
+  st_write(.,
+           file.path(p2carto, vector_data[grep('*Surface*', vector_data)]), 
            append = F)
 
 st_intersection(unc_bbox, grouse) %>% 
