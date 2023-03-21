@@ -824,7 +824,7 @@ fqi_pred <- ggplot() +
                          style = north_arrow_minimal) 
   
 ggsave(fqi_pred, path = 'results/maps', device = 'png',
-       bg = 'transparent', filename = 'FQI-plots.png',
+       bg = 'transparent', filename = 'FQI-prediction.png',
        dpi = 300, width = 6, height = 6, units = "in")
 
 rm(fqi_pred, Pad, plp, places, plp, non_ufo_blm, padus, p2carto, rivers, public_lands_pal,
