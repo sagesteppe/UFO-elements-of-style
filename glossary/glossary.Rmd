@@ -15,6 +15,12 @@ header-includes:
 
 **annual/biennial/perennial:** Plants differ in the lengths of their lives, and at which ages they are able to undergo reproductive activity. **Annual** plant species both reproduce and die within their first year of life. **Biennial** plant species tend to grow for one year, and flower and die in their second. **Perennial** plant species grow for two or more years, and oftentimes reproduce multiple times along this period.
 
+\begin{wrapfigure}{r}{0.45\textwidth}
+  \centering
+    \includegraphics[width=0.45\textwidth]{../results/plots/Stable_States.png}
+  \caption{Theoretical Illustration of States (green) and Phases (three lower left green areas). Each dashed line indicates a type of disturbance which pushed an area into an alternate stable state from the \textbf{reference} state (center). Management actions to return the area to another state often require more work than it took to move it away (hysteresis, more curved lines have higher amounts). Each Green basin has a varying depth, those with are isolated by there own depths, or other features (red), such as the upper right green, has a high \textbf{resistance} to changing from alternate state to another. The width of the basins relate to the \textbf{resilience} of them, many minor disturbances will move the ball up from the deepest portion of the basin (not pictured), but it can readily return towards the center of it.}
+\end{wrapfigure}
+
 **benchmark:** In this context, a benchmark is an informed objective or goal which to strive towards. These tend to be quantitative, or semi-quantitative, and reflect best scientific opinion and management knowledge regarding the capacity of land.
 
 **categorical:** Relating to statistics, objects which are able to be defined as discrete groupings. For example Counties, are discrete categories in the state of Colorado. The attributes of objects which themselves are **continuous** may be recorded in a fashion which makes them **categorical** data. Categorical data often require different statistical approaches than continuous data. 
@@ -35,11 +41,15 @@ header-includes:
 
 **grain:** The resolution of a dataset in both time and space. For example, if you had a rain gauge and checked it every hour of every day in March, you would have precipitation data at an hourly **grain**, and could also transform this to different grains like: **hourly**, **daily**, or a **monthly**. Spatial grains are analogous, and often form the most 'notable' component of a *raster*, i.e. the cell sizes.
 
+**impute** a statistical process to replace missing data with substituted values
+
 **indicator:** A set of features which are known to correlate to with a more challenging to measure metric, and serve as a proxy of it. The **AIM** dataset collects data on many features, which indicate overall site health. 
  
 **inference:** The utilization of applying statistical approaches and modelling to a sample to make judgement about a **population**.
  
 **invasive (species):** A species which until recent history (e.g. within the holocene), has been restricted to certain major geographic areas, and was introduced to different areas by human activities, and which is **noxious** in this area. 
+
+**landscape:** A similar geographic area with several re-occurring features. 
 
 **Line-Point Intercept:** A quantitative method for measuring the cover of an object relative to a plane, e.g. the soil surface. A single line, such as a measuring tape, is unrolled and at pre-determined intervals along its length a pin, which emulates a point, is dropped. The presence of features of interest, such as plants and rock fragments, are recorded at each location the pin is dropped. This method is used for many of the AIM indicators.
 
@@ -53,11 +63,17 @@ header-includes:
 
 **raster:** A format for transferring geographic data. A raster is, generally, a square grid where each cell depicts the value of an attribute, and is tied to a geographic location. The attributes which are usually stored in a raster are **continuous** such as *elevation*.
 
+**reference state** the initial stable state which an area was in without human disturbance
+
+**resilience** "the capacity of ecosystems to reorganize and regain their fundamental structure, processes, and functioning (i.e., to recover) when altered by stresses like drought and disturbances like inappropriate livestock grazing and altered fire regimes" (Chambers et al. 2017)
+
+**resistance** "the capacity of ecosystems to retain their fundamental structure, processes, and functioning when exposed to stresses, disturbances, or invasive species" (Chambers et al. 2017)
+
 **reproductively active:** The period during which a plant is reproducing, i.e. has flower and fruits. Many diagnostic features which are required to identify plant species are found only during this period. 
 
-\begin{wrapfigure}{r}{0.4\textwidth}
+\begin{wrapfigure}{r}{0.45\textwidth}
   \centering
-    \includegraphics[width=0.4\textwidth]{../results/plots/SampleFrameExample.png}
+    \includegraphics[width=0.45\textwidth]{../results/plots/SampleFrameExample.png}
   \caption{Graphic Illustrating a Target Frame, Sample Frame (the outer dimensions of the box), and which will be sampled as a single Panel.}
 \end{wrapfigure}
 
